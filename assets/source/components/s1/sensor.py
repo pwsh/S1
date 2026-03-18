@@ -1,7 +1,11 @@
+import logging
+
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import CONF_ID, CONF_UART_ID
 from esphome.components import sensor, uart, number, switch as _switch, text_sensor
+
+_LOGGER = logging.getLogger(__name__)
 
 DEPENDENCIES = ["uart"]
 AUTO_LOAD = ["sensor", "text_sensor", "number"]
@@ -32,32 +36,45 @@ SENSOR_KEYS = [
     "target3_x", "target3_y", "target3_angle", "target3_speed", "target3_distance",
 ]
 
-CONFIG_SCHEMA = cv.Schema(
-    {
-        cv.GenerateID(): cv.declare_id(LD2450),
-        cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
+# [FIX] Validator rejects configs that specify both hold keys simultaneously,
+# since dropout_hold_m takes precedence and dropout_hold_s would be silently ignored.
+def _validate_hold_keys(config):
+    if CONF_DROPOUT_HOLD_M in config and CONF_DROPOUT_HOLD_S in config:
+        raise cv.Invalid(
+            "Specify only one of 'dropout_hold_m' or 'dropout_hold_s', not both."
+        )
+    return config
 
-        **{cv.Required(key): sensor.sensor_schema() for key in SENSOR_KEYS},
 
-        cv.Required(CONF_DETECTION_RANGE): cv.use_id(number.Number),
-        cv.Required(CONF_FLIP_Y): cv.use_id(_switch.Switch),
+CONFIG_SCHEMA = cv.All(
+    cv.Schema(
+        {
+            cv.GenerateID(): cv.declare_id(LD2450),
+            cv.Required(CONF_UART_ID): cv.use_id(uart.UARTComponent),
 
-        cv.Optional(CONF_BLUETOOTH_STATE): text_sensor.text_sensor_schema(),
-        cv.Optional(CONF_TARGET1_STATE): text_sensor.text_sensor_schema(),
-        cv.Optional(CONF_TARGET2_STATE): text_sensor.text_sensor_schema(),
-        cv.Optional(CONF_TARGET3_STATE): text_sensor.text_sensor_schema(),
+            **{cv.Required(key): sensor.sensor_schema() for key in SENSOR_KEYS},
 
-        cv.Optional(CONF_EXCLUSION_ZONE_POINTS_COUNT): cv.use_id(number.Number),
-        **{cv.Optional(key): cv.use_id(number.Number) for key in EXCLUSION_ZONE_KEYS},
+            cv.Required(CONF_DETECTION_RANGE): cv.use_id(number.Number),
+            cv.Required(CONF_FLIP_Y): cv.use_id(_switch.Switch),
 
-        cv.Optional(CONF_GATE_RADIUS_CM): cv.use_id(number.Number),
-        cv.Optional(CONF_STATIONARY_SPEED_THRESH): cv.use_id(number.Number),
-        cv.Optional(CONF_STATIONARY_TIME_S): cv.use_id(number.Number),
-        cv.Optional(CONF_DROPOUT_HOLD_M): cv.use_id(number.Number),
-        cv.Optional(CONF_DROPOUT_HOLD_S): cv.use_id(number.Number),
-        cv.Optional(CONF_HOLDING_ENABLED): cv.use_id(_switch.Switch),
-    }
-).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA)
+            cv.Optional(CONF_BLUETOOTH_STATE): text_sensor.text_sensor_schema(),
+            cv.Optional(CONF_TARGET1_STATE): text_sensor.text_sensor_schema(),
+            cv.Optional(CONF_TARGET2_STATE): text_sensor.text_sensor_schema(),
+            cv.Optional(CONF_TARGET3_STATE): text_sensor.text_sensor_schema(),
+
+            cv.Optional(CONF_EXCLUSION_ZONE_POINTS_COUNT): cv.use_id(number.Number),
+            **{cv.Optional(key): cv.use_id(number.Number) for key in EXCLUSION_ZONE_KEYS},
+
+            cv.Optional(CONF_GATE_RADIUS_CM): cv.use_id(number.Number),
+            cv.Optional(CONF_STATIONARY_SPEED_THRESH): cv.use_id(number.Number),
+            cv.Optional(CONF_STATIONARY_TIME_S): cv.use_id(number.Number),
+            cv.Optional(CONF_DROPOUT_HOLD_M): cv.use_id(number.Number),
+            cv.Optional(CONF_DROPOUT_HOLD_S): cv.use_id(number.Number),
+            cv.Optional(CONF_HOLDING_ENABLED): cv.use_id(_switch.Switch),
+        }
+    ).extend(cv.COMPONENT_SCHEMA).extend(uart.UART_DEVICE_SCHEMA),
+    _validate_hold_keys,  # [FIX] Prevents both hold keys being specified at once
+)
 
 
 async def to_code(config):
@@ -116,6 +133,14 @@ async def to_code(config):
         hold_m = await cg.get_variable(config[CONF_DROPOUT_HOLD_M])
         cg.add(var.set_dropout_hold_m(hold_m))
     elif CONF_DROPOUT_HOLD_S in config:
+        # [DEPRECATED] dropout_hold_s is retained for backward compatibility only.
+        # The underlying set_dropout_hold_m() API expects minutes, so a value
+        # supplied in seconds will behave as minutes (60x shorter hold than intended).
+        # Use dropout_hold_m instead.
+        _LOGGER.warning(
+            "dropout_hold_s is deprecated: its value is passed directly to the "
+            "minutes-based hold API. Use dropout_hold_m to avoid confusion."
+        )
         hold_s_legacy = await cg.get_variable(config[CONF_DROPOUT_HOLD_S])
         cg.add(var.set_dropout_hold_m(hold_s_legacy))
 

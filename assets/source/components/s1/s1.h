@@ -71,11 +71,25 @@ class LD2450 : public Component, public uart::UARTDevice {
     uint32_t held_since_ms{0};
   } tracks_[3];
 
+  // [OPT] Tuning values bundled into a struct so parse_frame can compute them
+  // once per tick and pass them to update_track_, replacing 3x redundant nz_()
+  // calls (one per target slot) that previously occurred inside update_track_.
+  struct TrackParams {
+    float    gate_cm;
+    float    v_thr;
+    uint32_t stat_s;
+    uint32_t hold_min;
+    bool     hold_perm;
+    float    range_cm;
+  };
+
   void publish_zero_(int t);
   void publish_track_(int t, const Track &tr);
   void publish_state_text_(int t, const char *state);
+  // [OPT] Accepts pre-computed TrackParams instead of calling nz_() internally.
   void update_track_(int t, bool meas_valid,
-                     float x, float y, float angle, float speed, float dist, uint32_t now);
+                     float x, float y, float angle, float speed, float dist,
+                     uint32_t now, const TrackParams &p);
 
   static inline float nz_(number::Number *ptr, float def) {
     if (!ptr) return def;
@@ -84,6 +98,11 @@ class LD2450 : public Component, public uart::UARTDevice {
   }
 
  public:
+  // [OPT] All 15 sensor pointers stored in a 2D member array sensors_[target][field]
+  // (fields: 0=x, 1=y, 2=angle, 3=speed, 4=dist). The named aliases below are
+  // assigned from this array in the constructor so sensor.py registration is unaffected.
+  sensor::Sensor *sensors_[3][5];
+
   sensor::Sensor *target1_x, *target1_y, *target1_angle, *target1_speed, *target1_distance;
   sensor::Sensor *target2_x, *target2_y, *target2_angle, *target2_speed, *target2_distance;
   sensor::Sensor *target3_x, *target3_y, *target3_angle, *target3_speed, *target3_distance;
@@ -112,23 +131,21 @@ class LD2450 : public Component, public uart::UARTDevice {
 
 inline LD2450::LD2450()
     : Component(), uart::UARTDevice() {
-  target1_x        = new sensor::Sensor();
-  target1_y        = new sensor::Sensor();
-  target1_angle    = new sensor::Sensor();
-  target1_speed    = new sensor::Sensor();
-  target1_distance = new sensor::Sensor();
+  // [OPT] Allocate all 15 sensors via sensors_[3][5] in a single loop instead of
+  // 15 individual assignments. Named aliases are set from the array so external
+  // code (sensor.py registration via getattr) continues to work unchanged.
+  for (int t = 0; t < 3; ++t)
+    for (int f = 0; f < 5; ++f)
+      sensors_[t][f] = new sensor::Sensor();
 
-  target2_x        = new sensor::Sensor();
-  target2_y        = new sensor::Sensor();
-  target2_angle    = new sensor::Sensor();
-  target2_speed    = new sensor::Sensor();
-  target2_distance = new sensor::Sensor();
+  target1_x = sensors_[0][0]; target1_y = sensors_[0][1];
+  target1_angle = sensors_[0][2]; target1_speed = sensors_[0][3]; target1_distance = sensors_[0][4];
 
-  target3_x        = new sensor::Sensor();
-  target3_y        = new sensor::Sensor();
-  target3_angle    = new sensor::Sensor();
-  target3_speed    = new sensor::Sensor();
-  target3_distance = new sensor::Sensor();
+  target2_x = sensors_[1][0]; target2_y = sensors_[1][1];
+  target2_angle = sensors_[1][2]; target2_speed = sensors_[1][3]; target2_distance = sensors_[1][4];
+
+  target3_x = sensors_[2][0]; target3_y = sensors_[2][1];
+  target3_angle = sensors_[2][2]; target3_speed = sensors_[2][3]; target3_distance = sensors_[2][4];
 
   bluetooth_state_ = new text_sensor::TextSensor();
   target1_state    = new text_sensor::TextSensor();
@@ -179,8 +196,27 @@ inline void LD2450::loop() {
   while (available()) {
     int c = read();
     if (c < 0) break;
-    if (pos < MAX) buf[pos++] = static_cast<uint8_t>(c);
-    else pos = 0;
+
+    // [FIX] On buffer overflow, scan backward for the data-frame preamble
+    // (0xAA FF 03 00) and compact it to the front of the buffer instead of
+    // blindly discarding everything. This prevents a partial frame that straddles
+    // the overflow boundary from being processed as garbage on the next tick.
+    if (pos >= MAX) {
+      int resync = -1;
+      for (int i = 1; i <= MAX - 4; ++i) {
+        if (buf[i] == 0xAA && buf[i+1] == 0xFF && buf[i+2] == 0x03 && buf[i+3] == 0x00) {
+          resync = i;
+          break;
+        }
+      }
+      if (resync >= 0) {
+        pos = MAX - resync;
+        memmove(buf, buf + resync, pos);
+      } else {
+        pos = 0;
+      }
+    }
+    buf[pos++] = static_cast<uint8_t>(c);
 
     if (pos >= 10 && buf[pos-4]==0x04 && buf[pos-3]==0x03 && buf[pos-2]==0x02 && buf[pos-1]==0x01) {
       handle_ack_data(buf, pos);
@@ -253,30 +289,19 @@ inline bool LD2450::is_in_exclusion_zone(float x, float y) {
 }
 
 inline void LD2450::publish_zero_(int t) {
-  sensor::Sensor* xs[3]   = {target1_x,target2_x,target3_x};
-  sensor::Sensor* ys[3]   = {target1_y,target2_y,target3_y};
-  sensor::Sensor* ang[3]  = {target1_angle,target2_angle,target3_angle};
-  sensor::Sensor* sp[3]   = {target1_speed,target2_speed,target3_speed};
-  sensor::Sensor* ds[3]   = {target1_distance,target2_distance,target3_distance};
-  if (xs[t]) xs[t]->publish_state(0.0f);
-  if (ys[t]) ys[t]->publish_state(0.0f);
-  if (ang[t]) ang[t]->publish_state(0.0f);
-  if (sp[t]) sp[t]->publish_state(0.0f);
-  if (ds[t]) ds[t]->publish_state(0.0f);
+  // [OPT] Replaced 5 locally-rebuilt pointer arrays with direct sensors_[t] indexing.
+  for (int f = 0; f < 5; ++f)
+    if (sensors_[t][f]) sensors_[t][f]->publish_state(0.0f);
   publish_state_text_(t, "No target");
 }
 
 inline void LD2450::publish_track_(int t, const Track &tr) {
-  sensor::Sensor* xs[3]   = {target1_x,target2_x,target3_x};
-  sensor::Sensor* ys[3]   = {target1_y,target2_y,target3_y};
-  sensor::Sensor* ang[3]  = {target1_angle,target2_angle,target3_angle};
-  sensor::Sensor* sp[3]   = {target1_speed,target2_speed,target3_speed};
-  sensor::Sensor* ds[3]   = {target1_distance,target2_distance,target3_distance};
-  if (xs[t]) xs[t]->publish_state(tr.x);
-  if (ys[t]) ys[t]->publish_state(tr.y);
-  if (ang[t]) ang[t]->publish_state(tr.angle);
-  if (sp[t]) sp[t]->publish_state(tr.speed);
-  if (ds[t]) ds[t]->publish_state(tr.dist);
+  // [OPT] Replaced 5 locally-rebuilt pointer arrays with direct sensors_[t] indexing.
+  if (sensors_[t][0]) sensors_[t][0]->publish_state(tr.x);
+  if (sensors_[t][1]) sensors_[t][1]->publish_state(tr.y);
+  if (sensors_[t][2]) sensors_[t][2]->publish_state(tr.angle);
+  if (sensors_[t][3]) sensors_[t][3]->publish_state(tr.speed);
+  if (sensors_[t][4]) sensors_[t][4]->publish_state(tr.dist);
   if (tr.held)                publish_state_text_(t, "Holding");
   else if (tr.stationary)     publish_state_text_(t, "Stationary");
   else                        publish_state_text_(t, "Moving");
@@ -288,12 +313,11 @@ inline void LD2450::publish_state_text_(int t, const char *state) {
 }
 
 inline void LD2450::update_track_(int t, bool meas_valid,
-                                  float x, float y, float angle, float speed, float dist, uint32_t now) {
-  const float    gate_cm   = nz_(gate_radius_cm,          120.0f);
-  const float    v_thr     = nz_(stationary_speed_thresh,   45.0f);
-  const uint32_t stat_s    = (uint32_t) std::lround(nz_(stationary_time_s,   5.0f));
-  const uint32_t hold_min  = (uint32_t) std::lround(nz_(dropout_hold_m,     15.0f));
-  const bool     hold_perm = (holding_enabled ? holding_enabled->state : true);
+                                  float x, float y, float angle, float speed, float dist,
+                                  uint32_t now, const TrackParams &p) {
+  // [OPT] All tuning values received via TrackParams; nz_() calls removed from here.
+  // Previously each of the 3 per-frame update_track_ calls re-evaluated 5 nz_()
+  // reads; now they are computed once in parse_frame and passed in.
 
   static constexpr float FOV_DEGREES    = 120.0f;
   static constexpr float EDGE_MARGIN_CM = 30.0f;
@@ -301,13 +325,13 @@ inline void LD2450::update_track_(int t, bool meas_valid,
   Track &tr = tracks_[t];
 
   if (meas_valid) {
-    if (tr.held && std::fabs(speed) <= v_thr) {
+    if (tr.held && std::fabs(speed) <= p.v_thr) {
       tr.last_update_ms = now;
       publish_track_(t, tr);
       return;
     }
 
-    if (std::fabs(speed) > v_thr) {
+    if (std::fabs(speed) > p.v_thr) {
       tr.held = false;
       tr.stationary = false;
       tr.stationary_since_ms = 0;
@@ -319,7 +343,7 @@ inline void LD2450::update_track_(int t, bool meas_valid,
       if (tr.has_fix) {
         float dx = x - tr.x, dy = y - tr.y;
         float d  = std::sqrt(dx*dx + dy*dy);
-        accept = (d <= gate_cm) || (tr.stationary && d <= gate_cm * 1.5f);
+        accept = (d <= p.gate_cm) || (tr.stationary && d <= p.gate_cm * 1.5f);
       }
       if (!accept) tr = Track{};
     }
@@ -330,12 +354,12 @@ inline void LD2450::update_track_(int t, bool meas_valid,
     tr.has_fix = true;
     tr.last_update_ms = now;
 
-    if (std::fabs(speed) <= v_thr) {
+    if (std::fabs(speed) <= p.v_thr) {
       if (!tr.stationary) {
         tr.stationary = true;
         tr.stationary_since_ms = now;
       }
-      if (!tr.held && hold_perm && (now - tr.stationary_since_ms) >= stat_s * 1000UL) {
+      if (!tr.held && p.hold_perm && (now - tr.stationary_since_ms) >= p.stat_s * 1000UL) {
         tr.held = true;
         tr.held_since_ms = now;
       }
@@ -345,15 +369,14 @@ inline void LD2450::update_track_(int t, bool meas_valid,
     return;
 
   } else {
-    if (!hold_perm) {
+    if (!p.hold_perm) {
       tr = Track{};
       publish_zero_(t);
       return;
     }
 
     if (tr.has_fix) {
-      const float range_cm      = nz_(detection_range, 600.0f);
-      const bool near_max_range = (range_cm > 0.0f) && (tr.dist >= (range_cm - EDGE_MARGIN_CM));
+      const bool near_max_range = (p.range_cm > 0.0f) && (tr.dist >= (p.range_cm - EDGE_MARGIN_CM));
 
       bool near_fov_edge_or_outside = false;
       const float half_fov_rad = (FOV_DEGREES * 0.5f) * (M_PI / 180.0f);
@@ -373,7 +396,7 @@ inline void LD2450::update_track_(int t, bool meas_valid,
     }
 
     if (tr.has_fix && tr.held) {
-      if ((now - tr.last_update_ms) <= hold_min * 60000UL) {
+      if ((now - tr.last_update_ms) <= p.hold_min * 60000UL) {
         publish_track_(t, tr);
         return;
       }
@@ -385,11 +408,23 @@ inline void LD2450::update_track_(int t, bool meas_valid,
 }
 
 inline void LD2450::parse_frame(const uint8_t *b) {
-  float range_cm = nz_(detection_range, 600.0f);
-  bool do_flip   = (flip_y ? flip_y->state : false);
-  if (std::isnan(range_cm) || range_cm <= 0.0f) range_cm = 600.0f;
+  // [OPT] Tuning parameters computed once here and passed to update_track_ via
+  // TrackParams, replacing 3 separate per-target nz_() evaluations (15 pointer
+  // reads per frame reduced to 5).
+  TrackParams p;
+  p.range_cm  = nz_(detection_range, 600.0f);
+  // [FIX] Removed redundant std::isnan() guard that preceded this check.
+  // nz_() already substitutes the default value for NaN, so isnan(range_cm)
+  // can never be true here. Only the <= 0 guard is needed.
+  if (p.range_cm <= 0.0f) p.range_cm = 600.0f;
+  p.gate_cm   = nz_(gate_radius_cm,          120.0f);
+  p.v_thr     = nz_(stationary_speed_thresh,   45.0f);
+  p.stat_s    = (uint32_t) std::lround(nz_(stationary_time_s,   5.0f));
+  p.hold_min  = (uint32_t) std::lround(nz_(dropout_hold_m,     15.0f));
+  p.hold_perm = (holding_enabled ? holding_enabled->state : true);
 
-  uint32_t now   = millis();
+  bool do_flip = (flip_y ? flip_y->state : false);
+  uint32_t now = millis();
 
   for (int t = 0; t < 3; ++t) {
     int base = 4 + t*8;
@@ -404,26 +439,29 @@ inline void LD2450::parse_frame(const uint8_t *b) {
 
     if (do_flip) { x_cm = -x_cm; angle = -angle; }
 
-    bool valid = (dist > 0.0f) && (dist <= range_cm) && !is_in_exclusion_zone(x_cm, y_cm);
-    update_track_(t, valid, x_cm, y_cm, angle, speed, dist, now);
+    bool valid = (dist > 0.0f) && (dist <= p.range_cm) && !is_in_exclusion_zone(x_cm, y_cm);
+    update_track_(t, valid, x_cm, y_cm, angle, speed, dist, now, p);
   }
 }
 
-inline void LD2450::send_command(const uint8_t *command,size_t length){
+inline void LD2450::send_command(const uint8_t *command, size_t length) {
   static const uint8_t enable_cmd[]={0xFD,0xFC,0xFB,0xFA,0x04,0x00,0xFF,0x00,0x01,0x00,0x04,0x03,0x02,0x01};
-  write_array(enable_cmd,sizeof(enable_cmd));
+  write_array(enable_cmd, sizeof(enable_cmd));
 
-  static const uint8_t header[]={0xFD,0xFC,0xFB,0xFA};
-  uint8_t full_cmd[sizeof(header)+length];
-  memcpy(full_cmd,header,sizeof(header));
-  memcpy(full_cmd+sizeof(header),command,length);
-  write_array(full_cmd,sizeof(header)+length);
+  static const uint8_t header[] = {0xFD, 0xFC, 0xFB, 0xFA};
+  // [FIX] Replaced VLA (uint8_t full_cmd[sizeof(header)+length]) with a fixed-size
+  // buffer. VLAs are non-standard in C++14/17 and risky on stack-limited embedded
+  // targets. The largest observed command payload is 10 bytes; 48 bytes is ample margin.
+  uint8_t full_cmd[4 + 48];
+  memcpy(full_cmd, header, sizeof(header));
+  memcpy(full_cmd + sizeof(header), command, length);
+  write_array(full_cmd, sizeof(header) + length);
 
   static const uint8_t disable_cmd[]={0xFD,0xFC,0xFB,0xFA,0x02,0x00,0xFE,0x00,0x04,0x03,0x02,0x01};
-  write_array(disable_cmd,sizeof(disable_cmd));
+  write_array(disable_cmd, sizeof(disable_cmd));
 }
 
-inline uint16_t LD2450::twoByteToUint(uint8_t firstByte,uint8_t secondByte){
+inline uint16_t LD2450::twoByteToUint(uint8_t firstByte, uint8_t secondByte) {
   return ((uint16_t)secondByte<<8)|firstByte;
 }
 
