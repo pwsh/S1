@@ -1,50 +1,20 @@
 esphome:
   name: sensy-one
-  friendly_name: Sensy One 
+  friendly_name: Sensy One
   name_add_mac_suffix: True
-  project: 
+  project:
     name: Sensy-One.S1 mmWave Sensor
-    version: v1.2.8
+    version: v1.2.9
+  # [OPT] Shared zone polygon helpers; eliminates 9x duplicated in_poly/nz lambdas.
+  includes:
+    - components/s1/zone_helpers.h
 
   on_boot:
   - priority: 800
     then:
-      - if:
-          condition:
-            lambda: 'return id(holding_enabled_bool);'
-          then:
-            - switch.template.publish:
-                id: holding_switch_internal
-                state: true
-            - switch.template.publish:
-                id: holding_switch
-                state: true
-          else:
-            - switch.template.publish:
-                id: holding_switch_internal
-                state: false
-            - switch.template.publish:
-                id: holding_switch
-                state: false
-
-      - if:
-          condition:
-            lambda: 'return id(flip_y_state);'
-          then:
-            - switch.template.publish:
-                id: flip_y
-                state: true
-            - switch.template.publish:
-                id: flip_y_switch
-                state: true
-          else:
-            - switch.template.publish:
-                id: flip_y
-                state: false
-            - switch.template.publish:
-                id: flip_y_switch
-                state: false
-
+      # [OPT] Switch restore_mode replaces explicit on_boot publish for holding/flip_y.
+      # Both switches persist their own state to NVS via restore_mode and no longer
+      # need a paired internal switch or a global to act as the authoritative source.
       - if:
           condition:
             lambda: 'return id(radar_bt_enabled);'
@@ -116,20 +86,10 @@ uart:
   rx_buffer_size: 4096 
 
 globals:
-  - id: flip_y_state
-    type: bool
-    restore_value: true
-    initial_value: 'false'
-
   - id: onboarding_done
     type: bool
     restore_value: true
     initial_value: 'false'
-
-  - id: holding_enabled_bool
-    type: bool
-    restore_value: true
-    initial_value: 'true'
 
   - id: radar_bt_enabled
     type: bool
@@ -175,17 +135,9 @@ button:
             id(s1_sensor)->restart_module();
 
 switch:
-  - platform: template
-    id: flip_y
-    internal: true
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-
-  - platform: template
-    id: holding_switch_internal
-    internal: true
-    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
+  # [OPT] flip_y (internal) and holding_switch_internal removed.
+  # restore_mode on each user-facing switch provides NVS persistence without
+  # a paired internal switch or a separate global variable.
 
   - platform: template
     id: holding_switch
@@ -193,19 +145,7 @@ switch:
     icon: mdi:account-clock
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF         
-    turn_on_action:
-      - lambda: |
-          id(holding_enabled_bool) = true;
-      - switch.template.publish:
-          id: holding_switch_internal
-          state: true
-    turn_off_action:
-      - lambda: |
-          id(holding_enabled_bool) = false;
-      - switch.template.publish:
-          id: holding_switch_internal
-          state: false
+    restore_mode: RESTORE_DEFAULT_ON   # [OPT] ON matches original default (holding_enabled_bool initial_value: true)
 
   - platform: template
     id: flip_y_switch
@@ -213,19 +153,7 @@ switch:
     icon: mdi:axis-y-rotate-clockwise
     entity_category: config
     optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
-    turn_on_action:
-      - lambda: |-
-          id(flip_y_state) = true;
-      - switch.template.publish:
-          id: flip_y
-          state: true
-    turn_off_action:
-      - lambda: |-
-          id(flip_y_state) = false;
-      - switch.template.publish:
-          id: flip_y
-          state: false
+    restore_mode: RESTORE_DEFAULT_OFF  # OFF matches original default (flip_y_state initial_value: false)
 
   - platform: template
     id: radar_bluetooth_switch
@@ -345,7 +273,7 @@ sensor:
       unit_of_measurement: "cm"
 
     detection_range: detection_range
-    flip_y: flip_y
+    flip_y: flip_y_switch   # [OPT] Now references the user-facing switch directly
     exclusion_zone_points_count: exclusion_zone_points_count
     exclusion_zone_p1_x: exclusion_zone_p1_x
     exclusion_zone_p1_y: exclusion_zone_p1_y
@@ -368,7 +296,7 @@ sensor:
     stationary_speed_thresh: stationary_speed_thresh
     stationary_time_s: stationary_time_s
     dropout_hold_m: dropout_hold_m
-    holding_enabled: holding_switch_internal
+    holding_enabled: holding_switch   # [OPT] Now references the user-facing switch directly
 
     target1_state:
       name: "Target 1 State"
@@ -405,37 +333,24 @@ sensor:
     unit_of_measurement: ""
     update_interval: 1s
     lambda: |-
+      // [OPT] Algorithm extracted to zone_helpers.h (zone_nz, zone_in_poly).
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone1_points_count).state;
       if (n < 3) return 0;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone1_p1_x).state); ys[0]=nz(id(zone1_p1_y).state);
-      xs[1]=nz(id(zone1_p2_x).state); ys[1]=nz(id(zone1_p2_y).state);
-      xs[2]=nz(id(zone1_p3_x).state); ys[2]=nz(id(zone1_p3_y).state);
-      xs[3]=nz(id(zone1_p4_x).state); ys[3]=nz(id(zone1_p4_y).state);
-      xs[4]=nz(id(zone1_p5_x).state); ys[4]=nz(id(zone1_p5_y).state);
-      xs[5]=nz(id(zone1_p6_x).state); ys[5]=nz(id(zone1_p6_y).state);
-      xs[6]=nz(id(zone1_p7_x).state); ys[6]=nz(id(zone1_p7_y).state);
-      xs[7]=nz(id(zone1_p8_x).state); ys[7]=nz(id(zone1_p8_y).state);
       if (n > MAX_PTS) n = MAX_PTS;
-
-      // Ray-casting point-in-polygon
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
+      xs[0]=zone_nz(id(zone1_p1_x).state); ys[0]=zone_nz(id(zone1_p1_y).state);
+      xs[1]=zone_nz(id(zone1_p2_x).state); ys[1]=zone_nz(id(zone1_p2_y).state);
+      xs[2]=zone_nz(id(zone1_p3_x).state); ys[2]=zone_nz(id(zone1_p3_y).state);
+      xs[3]=zone_nz(id(zone1_p4_x).state); ys[3]=zone_nz(id(zone1_p4_y).state);
+      xs[4]=zone_nz(id(zone1_p5_x).state); ys[4]=zone_nz(id(zone1_p5_y).state);
+      xs[5]=zone_nz(id(zone1_p6_x).state); ys[5]=zone_nz(id(zone1_p6_y).state);
+      xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
+      xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
       int count = 0;
-      if (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state)) count++;
-      if (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state)) count++;
-      if (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state)) count++;
+      if (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n)) count++;
+      if (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n)) count++;
+      if (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n)) count++;
       return count;
 
   - platform: template
@@ -445,37 +360,24 @@ sensor:
     unit_of_measurement: ""
     update_interval: 1s
     lambda: |-
+      // [OPT] Algorithm extracted to zone_helpers.h (zone_nz, zone_in_poly).
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone2_points_count).state;
       if (n < 3) return 0;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone2_p1_x).state); ys[0]=nz(id(zone2_p1_y).state);
-      xs[1]=nz(id(zone2_p2_x).state); ys[1]=nz(id(zone2_p2_y).state);
-      xs[2]=nz(id(zone2_p3_x).state); ys[2]=nz(id(zone2_p3_y).state);
-      xs[3]=nz(id(zone2_p4_x).state); ys[3]=nz(id(zone2_p4_y).state);
-      xs[4]=nz(id(zone2_p5_x).state); ys[4]=nz(id(zone2_p5_y).state);
-      xs[5]=nz(id(zone2_p6_x).state); ys[5]=nz(id(zone2_p6_y).state);
-      xs[6]=nz(id(zone2_p7_x).state); ys[6]=nz(id(zone2_p7_y).state);
-      xs[7]=nz(id(zone2_p8_x).state); ys[7]=nz(id(zone2_p8_y).state);
       if (n > MAX_PTS) n = MAX_PTS;
-
-      // Ray-casting point-in-polygon
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
+      xs[0]=zone_nz(id(zone2_p1_x).state); ys[0]=zone_nz(id(zone2_p1_y).state);
+      xs[1]=zone_nz(id(zone2_p2_x).state); ys[1]=zone_nz(id(zone2_p2_y).state);
+      xs[2]=zone_nz(id(zone2_p3_x).state); ys[2]=zone_nz(id(zone2_p3_y).state);
+      xs[3]=zone_nz(id(zone2_p4_x).state); ys[3]=zone_nz(id(zone2_p4_y).state);
+      xs[4]=zone_nz(id(zone2_p5_x).state); ys[4]=zone_nz(id(zone2_p5_y).state);
+      xs[5]=zone_nz(id(zone2_p6_x).state); ys[5]=zone_nz(id(zone2_p6_y).state);
+      xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
+      xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
       int count = 0;
-      if (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state)) count++;
-      if (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state)) count++;
-      if (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state)) count++;
+      if (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n)) count++;
+      if (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n)) count++;
+      if (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n)) count++;
       return count;
 
   - platform: template
@@ -485,37 +387,24 @@ sensor:
     unit_of_measurement: ""
     update_interval: 1s
     lambda: |-
+      // [OPT] Algorithm extracted to zone_helpers.h (zone_nz, zone_in_poly).
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone3_points_count).state;
       if (n < 3) return 0;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone3_p1_x).state); ys[0]=nz(id(zone3_p1_y).state);
-      xs[1]=nz(id(zone3_p2_x).state); ys[1]=nz(id(zone3_p2_y).state);
-      xs[2]=nz(id(zone3_p3_x).state); ys[2]=nz(id(zone3_p3_y).state);
-      xs[3]=nz(id(zone3_p4_x).state); ys[3]=nz(id(zone3_p4_y).state);
-      xs[4]=nz(id(zone3_p5_x).state); ys[4]=nz(id(zone3_p5_y).state);
-      xs[5]=nz(id(zone3_p6_x).state); ys[5]=nz(id(zone3_p6_y).state);
-      xs[6]=nz(id(zone3_p7_x).state); ys[6]=nz(id(zone3_p7_y).state);
-      xs[7]=nz(id(zone3_p8_x).state); ys[7]=nz(id(zone3_p8_y).state);
       if (n > MAX_PTS) n = MAX_PTS;
-
-      // Ray-casting point-in-polygon
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
+      xs[0]=zone_nz(id(zone3_p1_x).state); ys[0]=zone_nz(id(zone3_p1_y).state);
+      xs[1]=zone_nz(id(zone3_p2_x).state); ys[1]=zone_nz(id(zone3_p2_y).state);
+      xs[2]=zone_nz(id(zone3_p3_x).state); ys[2]=zone_nz(id(zone3_p3_y).state);
+      xs[3]=zone_nz(id(zone3_p4_x).state); ys[3]=zone_nz(id(zone3_p4_y).state);
+      xs[4]=zone_nz(id(zone3_p5_x).state); ys[4]=zone_nz(id(zone3_p5_y).state);
+      xs[5]=zone_nz(id(zone3_p6_x).state); ys[5]=zone_nz(id(zone3_p6_y).state);
+      xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
+      xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
       int count = 0;
-      if (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state)) count++;
-      if (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state)) count++;
-      if (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state)) count++;
+      if (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n)) count++;
+      if (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n)) count++;
+      if (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n)) count++;
       return count;
 
   - platform: internal_temperature
@@ -530,6 +419,20 @@ sensor:
     update_interval: 1s
 
 number:
+  - platform: template
+    name: "Zone Sensor Interval"
+    icon: mdi:timer-sync-outline
+    id: zone_update_interval
+    unit_of_measurement: "s"
+    min_value: 0.1
+    max_value: 60
+    step: 0.1
+    initial_value: 1.0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
   - platform: template
     name: "Any Presence Delay"
     icon: mdi:timer-outline
@@ -1587,41 +1490,35 @@ binary_sensor:
     icon: mdi:home-account
     device_class: presence
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
+      // update_interval is not valid on template binary sensors; software throttle used instead.
       static unsigned long last_off_1 = 0;
+      static unsigned long last_eval_1 = 0;
+      static bool last_pres_1 = false;
       unsigned long now = millis();
-
-      const int MAX_PTS = 8;
-      float xs[MAX_PTS], ys[MAX_PTS];
-      int n = (int) id(zone1_points_count).state;
-      if (n < 3) return (now - last_off_1) < (unsigned long)(id(zone1_presence_delay).state * 1000.0);
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone1_p1_x).state); ys[0]=nz(id(zone1_p1_y).state);
-      xs[1]=nz(id(zone1_p2_x).state); ys[1]=nz(id(zone1_p2_y).state);
-      xs[2]=nz(id(zone1_p3_x).state); ys[2]=nz(id(zone1_p3_y).state);
-      xs[3]=nz(id(zone1_p4_x).state); ys[3]=nz(id(zone1_p4_y).state);
-      xs[4]=nz(id(zone1_p5_x).state); ys[4]=nz(id(zone1_p5_y).state);
-      xs[5]=nz(id(zone1_p6_x).state); ys[5]=nz(id(zone1_p6_y).state);
-      xs[6]=nz(id(zone1_p7_x).state); ys[6]=nz(id(zone1_p7_y).state);
-      xs[7]=nz(id(zone1_p8_x).state); ys[7]=nz(id(zone1_p8_y).state);
-      if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool pres =
-          (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state));
-
-      if (pres) { last_off_1 = now; return true; }
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_1) >= interval_ms) {
+        last_eval_1 = now;
+        const int MAX_PTS = 8;
+        float xs[MAX_PTS], ys[MAX_PTS];
+        int n = (int) id(zone1_points_count).state;
+        if (n >= 3) {
+          if (n > MAX_PTS) n = MAX_PTS;
+          xs[0]=zone_nz(id(zone1_p1_x).state); ys[0]=zone_nz(id(zone1_p1_y).state);
+          xs[1]=zone_nz(id(zone1_p2_x).state); ys[1]=zone_nz(id(zone1_p2_y).state);
+          xs[2]=zone_nz(id(zone1_p3_x).state); ys[2]=zone_nz(id(zone1_p3_y).state);
+          xs[3]=zone_nz(id(zone1_p4_x).state); ys[3]=zone_nz(id(zone1_p4_y).state);
+          xs[4]=zone_nz(id(zone1_p5_x).state); ys[4]=zone_nz(id(zone1_p5_y).state);
+          xs[5]=zone_nz(id(zone1_p6_x).state); ys[5]=zone_nz(id(zone1_p6_y).state);
+          xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
+          xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
+          last_pres_1 =
+              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+        } else { last_pres_1 = false; }
+      }
+      if (last_pres_1) { last_off_1 = now; return true; }
       return (now - last_off_1) < (unsigned long)(id(zone1_presence_delay).state * 1000.0);
 
   - platform: template
@@ -1629,80 +1526,66 @@ binary_sensor:
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
+      static unsigned long last_eval_1m = 0;
+      static bool last_mov_1 = false;
+      unsigned long now = millis();
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_1m) < interval_ms) return last_mov_1;
+      last_eval_1m = now;
       float thresh = id(zone1_movement_threshold).state;
-
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone1_points_count).state;
-      if (n < 3) return false;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone1_p1_x).state); ys[0]=nz(id(zone1_p1_y).state);
-      xs[1]=nz(id(zone1_p2_x).state); ys[1]=nz(id(zone1_p2_y).state);
-      xs[2]=nz(id(zone1_p3_x).state); ys[2]=nz(id(zone1_p3_y).state);
-      xs[3]=nz(id(zone1_p4_x).state); ys[3]=nz(id(zone1_p4_y).state);
-      xs[4]=nz(id(zone1_p5_x).state); ys[4]=nz(id(zone1_p5_y).state);
-      xs[5]=nz(id(zone1_p6_x).state); ys[5]=nz(id(zone1_p6_y).state);
-      xs[6]=nz(id(zone1_p7_x).state); ys[6]=nz(id(zone1_p7_y).state);
-      xs[7]=nz(id(zone1_p8_x).state); ys[7]=nz(id(zone1_p8_y).state);
+      if (n < 3) { last_mov_1 = false; return false; }
       if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool mov =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && in_poly(id(target3_x).state, id(target3_y).state));
-      return mov;
+      xs[0]=zone_nz(id(zone1_p1_x).state); ys[0]=zone_nz(id(zone1_p1_y).state);
+      xs[1]=zone_nz(id(zone1_p2_x).state); ys[1]=zone_nz(id(zone1_p2_y).state);
+      xs[2]=zone_nz(id(zone1_p3_x).state); ys[2]=zone_nz(id(zone1_p3_y).state);
+      xs[3]=zone_nz(id(zone1_p4_x).state); ys[3]=zone_nz(id(zone1_p4_y).state);
+      xs[4]=zone_nz(id(zone1_p5_x).state); ys[4]=zone_nz(id(zone1_p5_y).state);
+      xs[5]=zone_nz(id(zone1_p6_x).state); ys[5]=zone_nz(id(zone1_p6_y).state);
+      xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
+      xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
+      last_mov_1 =
+          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+      return last_mov_1;
 
   - platform: template
     name: "Zone 2 Presence"
     icon: mdi:home-account
     device_class: presence
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
       static unsigned long last_off_2 = 0;
+      static unsigned long last_eval_2 = 0;
+      static bool last_pres_2 = false;
       unsigned long now = millis();
-
-      const int MAX_PTS = 8;
-      float xs[MAX_PTS], ys[MAX_PTS];
-      int n = (int) id(zone2_points_count).state;
-      if (n < 3) return (now - last_off_2) < (unsigned long)(id(zone2_presence_delay).state * 1000.0);
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone2_p1_x).state); ys[0]=nz(id(zone2_p1_y).state);
-      xs[1]=nz(id(zone2_p2_x).state); ys[1]=nz(id(zone2_p2_y).state);
-      xs[2]=nz(id(zone2_p3_x).state); ys[2]=nz(id(zone2_p3_y).state);
-      xs[3]=nz(id(zone2_p4_x).state); ys[3]=nz(id(zone2_p4_y).state);
-      xs[4]=nz(id(zone2_p5_x).state); ys[4]=nz(id(zone2_p5_y).state);
-      xs[5]=nz(id(zone2_p6_x).state); ys[5]=nz(id(zone2_p6_y).state);
-      xs[6]=nz(id(zone2_p7_x).state); ys[6]=nz(id(zone2_p7_y).state);
-      xs[7]=nz(id(zone2_p8_x).state); ys[7]=nz(id(zone2_p8_y).state);
-      if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool pres =
-          (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state));
-
-      if (pres) { last_off_2 = now; return true; }
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_2) >= interval_ms) {
+        last_eval_2 = now;
+        const int MAX_PTS = 8;
+        float xs[MAX_PTS], ys[MAX_PTS];
+        int n = (int) id(zone2_points_count).state;
+        if (n >= 3) {
+          if (n > MAX_PTS) n = MAX_PTS;
+          xs[0]=zone_nz(id(zone2_p1_x).state); ys[0]=zone_nz(id(zone2_p1_y).state);
+          xs[1]=zone_nz(id(zone2_p2_x).state); ys[1]=zone_nz(id(zone2_p2_y).state);
+          xs[2]=zone_nz(id(zone2_p3_x).state); ys[2]=zone_nz(id(zone2_p3_y).state);
+          xs[3]=zone_nz(id(zone2_p4_x).state); ys[3]=zone_nz(id(zone2_p4_y).state);
+          xs[4]=zone_nz(id(zone2_p5_x).state); ys[4]=zone_nz(id(zone2_p5_y).state);
+          xs[5]=zone_nz(id(zone2_p6_x).state); ys[5]=zone_nz(id(zone2_p6_y).state);
+          xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
+          xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
+          last_pres_2 =
+              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+        } else { last_pres_2 = false; }
+      }
+      if (last_pres_2) { last_off_2 = now; return true; }
       return (now - last_off_2) < (unsigned long)(id(zone2_presence_delay).state * 1000.0);
 
   - platform: template
@@ -1710,80 +1593,66 @@ binary_sensor:
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
+      static unsigned long last_eval_2m = 0;
+      static bool last_mov_2 = false;
+      unsigned long now = millis();
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_2m) < interval_ms) return last_mov_2;
+      last_eval_2m = now;
       float thresh = id(zone2_movement_threshold).state;
-
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone2_points_count).state;
-      if (n < 3) return false;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone2_p1_x).state); ys[0]=nz(id(zone2_p1_y).state);
-      xs[1]=nz(id(zone2_p2_x).state); ys[1]=nz(id(zone2_p2_y).state);
-      xs[2]=nz(id(zone2_p3_x).state); ys[2]=nz(id(zone2_p3_y).state);
-      xs[3]=nz(id(zone2_p4_x).state); ys[3]=nz(id(zone2_p4_y).state);
-      xs[4]=nz(id(zone2_p5_x).state); ys[4]=nz(id(zone2_p5_y).state);
-      xs[5]=nz(id(zone2_p6_x).state); ys[5]=nz(id(zone2_p6_y).state);
-      xs[6]=nz(id(zone2_p7_x).state); ys[6]=nz(id(zone2_p7_y).state);
-      xs[7]=nz(id(zone2_p8_x).state); ys[7]=nz(id(zone2_p8_y).state);
+      if (n < 3) { last_mov_2 = false; return false; }
       if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool mov =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && in_poly(id(target3_x).state, id(target3_y).state));
-      return mov;
+      xs[0]=zone_nz(id(zone2_p1_x).state); ys[0]=zone_nz(id(zone2_p1_y).state);
+      xs[1]=zone_nz(id(zone2_p2_x).state); ys[1]=zone_nz(id(zone2_p2_y).state);
+      xs[2]=zone_nz(id(zone2_p3_x).state); ys[2]=zone_nz(id(zone2_p3_y).state);
+      xs[3]=zone_nz(id(zone2_p4_x).state); ys[3]=zone_nz(id(zone2_p4_y).state);
+      xs[4]=zone_nz(id(zone2_p5_x).state); ys[4]=zone_nz(id(zone2_p5_y).state);
+      xs[5]=zone_nz(id(zone2_p6_x).state); ys[5]=zone_nz(id(zone2_p6_y).state);
+      xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
+      xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
+      last_mov_2 =
+          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+      return last_mov_2;
 
   - platform: template
     name: "Zone 3 Presence"
     icon: mdi:home-account
     device_class: presence
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
       static unsigned long last_off_3 = 0;
+      static unsigned long last_eval_3 = 0;
+      static bool last_pres_3 = false;
       unsigned long now = millis();
-
-      const int MAX_PTS = 8;
-      float xs[MAX_PTS], ys[MAX_PTS];
-      int n = (int) id(zone3_points_count).state;
-      if (n < 3) return (now - last_off_3) < (unsigned long)(id(zone3_presence_delay).state * 1000.0);
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone3_p1_x).state); ys[0]=nz(id(zone3_p1_y).state);
-      xs[1]=nz(id(zone3_p2_x).state); ys[1]=nz(id(zone3_p2_y).state);
-      xs[2]=nz(id(zone3_p3_x).state); ys[2]=nz(id(zone3_p3_y).state);
-      xs[3]=nz(id(zone3_p4_x).state); ys[3]=nz(id(zone3_p4_y).state);
-      xs[4]=nz(id(zone3_p5_x).state); ys[4]=nz(id(zone3_p5_y).state);
-      xs[5]=nz(id(zone3_p6_x).state); ys[5]=nz(id(zone3_p6_y).state);
-      xs[6]=nz(id(zone3_p7_x).state); ys[6]=nz(id(zone3_p7_y).state);
-      xs[7]=nz(id(zone3_p8_x).state); ys[7]=nz(id(zone3_p8_y).state);
-      if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool pres =
-          (id(target1_distance).state > 0 && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && in_poly(id(target3_x).state, id(target3_y).state));
-
-      if (pres) { last_off_3 = now; return true; }
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_3) >= interval_ms) {
+        last_eval_3 = now;
+        const int MAX_PTS = 8;
+        float xs[MAX_PTS], ys[MAX_PTS];
+        int n = (int) id(zone3_points_count).state;
+        if (n >= 3) {
+          if (n > MAX_PTS) n = MAX_PTS;
+          xs[0]=zone_nz(id(zone3_p1_x).state); ys[0]=zone_nz(id(zone3_p1_y).state);
+          xs[1]=zone_nz(id(zone3_p2_x).state); ys[1]=zone_nz(id(zone3_p2_y).state);
+          xs[2]=zone_nz(id(zone3_p3_x).state); ys[2]=zone_nz(id(zone3_p3_y).state);
+          xs[3]=zone_nz(id(zone3_p4_x).state); ys[3]=zone_nz(id(zone3_p4_y).state);
+          xs[4]=zone_nz(id(zone3_p5_x).state); ys[4]=zone_nz(id(zone3_p5_y).state);
+          xs[5]=zone_nz(id(zone3_p6_x).state); ys[5]=zone_nz(id(zone3_p6_y).state);
+          xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
+          xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
+          last_pres_3 =
+              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+        } else { last_pres_3 = false; }
+      }
+      if (last_pres_3) { last_off_3 = now; return true; }
       return (now - last_off_3) < (unsigned long)(id(zone3_presence_delay).state * 1000.0);
 
   - platform: template
@@ -1791,39 +1660,32 @@ binary_sensor:
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
+      // [OPT] Polygon evaluation throttled by zone_update_interval (configurable in GUI).
+      static unsigned long last_eval_3m = 0;
+      static bool last_mov_3 = false;
+      unsigned long now = millis();
+      unsigned long interval_ms = (unsigned long)(id(zone_update_interval).state * 1000.0f);
+      if ((now - last_eval_3m) < interval_ms) return last_mov_3;
+      last_eval_3m = now;
       float thresh = id(zone3_movement_threshold).state;
-
       const int MAX_PTS = 8;
       float xs[MAX_PTS], ys[MAX_PTS];
       int n = (int) id(zone3_points_count).state;
-      if (n < 3) return false;
-
-      auto nz = [](float v){ return isnan(v) ? 0.0f : v; };
-      xs[0]=nz(id(zone3_p1_x).state); ys[0]=nz(id(zone3_p1_y).state);
-      xs[1]=nz(id(zone3_p2_x).state); ys[1]=nz(id(zone3_p2_y).state);
-      xs[2]=nz(id(zone3_p3_x).state); ys[2]=nz(id(zone3_p3_y).state);
-      xs[3]=nz(id(zone3_p4_x).state); ys[3]=nz(id(zone3_p4_y).state);
-      xs[4]=nz(id(zone3_p5_x).state); ys[4]=nz(id(zone3_p5_y).state);
-      xs[5]=nz(id(zone3_p6_x).state); ys[5]=nz(id(zone3_p6_y).state);
-      xs[6]=nz(id(zone3_p7_x).state); ys[6]=nz(id(zone3_p7_y).state);
-      xs[7]=nz(id(zone3_p8_x).state); ys[7]=nz(id(zone3_p8_y).state);
+      if (n < 3) { last_mov_3 = false; return false; }
       if (n > MAX_PTS) n = MAX_PTS;
-
-      auto in_poly = [&](float px, float py)->bool {
-        bool inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-          bool inter = ((ys[i] > py) != (ys[j] > py)) &&
-                      (px < (xs[j] - xs[i]) * (py - ys[i]) / ((ys[j]-ys[i]) == 0 ? 1e-6f : (ys[j]-ys[i])) + xs[i]);
-          if (inter) inside = !inside;
-        }
-        return inside;
-      };
-
-      bool mov =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && in_poly(id(target1_x).state, id(target1_y).state))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && in_poly(id(target2_x).state, id(target2_y).state))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && in_poly(id(target3_x).state, id(target3_y).state));
-      return mov;
+      xs[0]=zone_nz(id(zone3_p1_x).state); ys[0]=zone_nz(id(zone3_p1_y).state);
+      xs[1]=zone_nz(id(zone3_p2_x).state); ys[1]=zone_nz(id(zone3_p2_y).state);
+      xs[2]=zone_nz(id(zone3_p3_x).state); ys[2]=zone_nz(id(zone3_p3_y).state);
+      xs[3]=zone_nz(id(zone3_p4_x).state); ys[3]=zone_nz(id(zone3_p4_y).state);
+      xs[4]=zone_nz(id(zone3_p5_x).state); ys[4]=zone_nz(id(zone3_p5_y).state);
+      xs[5]=zone_nz(id(zone3_p6_x).state); ys[5]=zone_nz(id(zone3_p6_y).state);
+      xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
+      xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
+      last_mov_3 =
+          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
+        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
+        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+      return last_mov_3;
 
 text_sensor:
   - platform: wifi_info
