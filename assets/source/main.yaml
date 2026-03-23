@@ -47,6 +47,113 @@ esphome:
             - lambda: |-
                 id(s1_sensor)->set_multi_target_tracking();
 
+  - priority: -100
+    then:
+      - lambda: |-
+          // Reapply zone and object display names from NVS-restored text entities.
+          {
+            std::string n = id(zone1_name).state;
+            id(zone1_target_count)->set_name((n + " Target Count").c_str());
+            id(zone1_points_count)->set_name((n + " Points Count").c_str());
+            id(zone1_p1_x)->set_name((n + " P1 X").c_str());
+            id(zone1_p1_y)->set_name((n + " P1 Y").c_str());
+            id(zone1_p2_x)->set_name((n + " P2 X").c_str());
+            id(zone1_p2_y)->set_name((n + " P2 Y").c_str());
+            id(zone1_p3_x)->set_name((n + " P3 X").c_str());
+            id(zone1_p3_y)->set_name((n + " P3 Y").c_str());
+            id(zone1_p4_x)->set_name((n + " P4 X").c_str());
+            id(zone1_p4_y)->set_name((n + " P4 Y").c_str());
+            id(zone1_p5_x)->set_name((n + " P5 X").c_str());
+            id(zone1_p5_y)->set_name((n + " P5 Y").c_str());
+            id(zone1_p6_x)->set_name((n + " P6 X").c_str());
+            id(zone1_p6_y)->set_name((n + " P6 Y").c_str());
+            id(zone1_p7_x)->set_name((n + " P7 X").c_str());
+            id(zone1_p7_y)->set_name((n + " P7 Y").c_str());
+            id(zone1_p8_x)->set_name((n + " P8 X").c_str());
+            id(zone1_p8_y)->set_name((n + " P8 Y").c_str());
+            id(zone1_movement_threshold)->set_name((n + " Movement Threshold").c_str());
+            id(zone1_presence_delay)->set_name((n + " Presence Delay").c_str());
+            id(zone1_presence_bs)->set_name((n + " Presence").c_str());
+            id(zone1_movement_bs)->set_name((n + " Movement").c_str());
+          }
+          {
+            std::string n = id(zone2_name).state;
+            id(zone2_target_count)->set_name((n + " Target Count").c_str());
+            id(zone2_points_count)->set_name((n + " Points Count").c_str());
+            id(zone2_p1_x)->set_name((n + " P1 X").c_str());
+            id(zone2_p1_y)->set_name((n + " P1 Y").c_str());
+            id(zone2_p2_x)->set_name((n + " P2 X").c_str());
+            id(zone2_p2_y)->set_name((n + " P2 Y").c_str());
+            id(zone2_p3_x)->set_name((n + " P3 X").c_str());
+            id(zone2_p3_y)->set_name((n + " P3 Y").c_str());
+            id(zone2_p4_x)->set_name((n + " P4 X").c_str());
+            id(zone2_p4_y)->set_name((n + " P4 Y").c_str());
+            id(zone2_p5_x)->set_name((n + " P5 X").c_str());
+            id(zone2_p5_y)->set_name((n + " P5 Y").c_str());
+            id(zone2_p6_x)->set_name((n + " P6 X").c_str());
+            id(zone2_p6_y)->set_name((n + " P6 Y").c_str());
+            id(zone2_p7_x)->set_name((n + " P7 X").c_str());
+            id(zone2_p7_y)->set_name((n + " P7 Y").c_str());
+            id(zone2_p8_x)->set_name((n + " P8 X").c_str());
+            id(zone2_p8_y)->set_name((n + " P8 Y").c_str());
+            id(zone2_movement_threshold)->set_name((n + " Movement Threshold").c_str());
+            id(zone2_presence_delay)->set_name((n + " Presence Delay").c_str());
+            id(zone2_presence_bs)->set_name((n + " Presence").c_str());
+            id(zone2_movement_bs)->set_name((n + " Movement").c_str());
+          }
+          {
+            std::string n = id(zone3_name).state;
+            id(zone3_target_count)->set_name((n + " Target Count").c_str());
+            id(zone3_points_count)->set_name((n + " Points Count").c_str());
+            id(zone3_p1_x)->set_name((n + " P1 X").c_str());
+            id(zone3_p1_y)->set_name((n + " P1 Y").c_str());
+            id(zone3_p2_x)->set_name((n + " P2 X").c_str());
+            id(zone3_p2_y)->set_name((n + " P2 Y").c_str());
+            id(zone3_p3_x)->set_name((n + " P3 X").c_str());
+            id(zone3_p3_y)->set_name((n + " P3 Y").c_str());
+            id(zone3_p4_x)->set_name((n + " P4 X").c_str());
+            id(zone3_p4_y)->set_name((n + " P4 Y").c_str());
+            id(zone3_p5_x)->set_name((n + " P5 X").c_str());
+            id(zone3_p5_y)->set_name((n + " P5 Y").c_str());
+            id(zone3_p6_x)->set_name((n + " P6 X").c_str());
+            id(zone3_p6_y)->set_name((n + " P6 Y").c_str());
+            id(zone3_p7_x)->set_name((n + " P7 X").c_str());
+            id(zone3_p7_y)->set_name((n + " P7 Y").c_str());
+            id(zone3_p8_x)->set_name((n + " P8 X").c_str());
+            id(zone3_p8_y)->set_name((n + " P8 Y").c_str());
+            id(zone3_movement_threshold)->set_name((n + " Movement Threshold").c_str());
+            id(zone3_presence_delay)->set_name((n + " Presence Delay").c_str());
+            id(zone3_presence_bs)->set_name((n + " Presence").c_str());
+            id(zone3_movement_bs)->set_name((n + " Movement").c_str());
+          }
+          {
+            std::string n = id(obj1_name).state;
+            id(obj1_enabled)->set_name((n + " | Enabled").c_str());
+            id(obj1_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
+            id(obj1_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
+            id(obj1_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
+            id(obj1_x)->set_name((n + " X").c_str());
+            id(obj1_y)->set_name((n + " Y").c_str());
+          }
+          {
+            std::string n = id(obj2_name).state;
+            id(obj2_enabled)->set_name((n + " | Enabled").c_str());
+            id(obj2_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
+            id(obj2_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
+            id(obj2_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
+            id(obj2_x)->set_name((n + " X").c_str());
+            id(obj2_y)->set_name((n + " Y").c_str());
+          }
+          {
+            std::string n = id(obj3_name).state;
+            id(obj3_enabled)->set_name((n + " | Enabled").c_str());
+            id(obj3_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
+            id(obj3_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
+            id(obj3_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
+            id(obj3_x)->set_name((n + " X").c_str());
+            id(obj3_y)->set_name((n + " Y").c_str());
+          }
+
 external_components:
   - source:
       type: local
