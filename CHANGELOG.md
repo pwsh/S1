@@ -20,6 +20,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   NVS-backed, config category) define up to 3 fixed points on the radar plane.
 - 3 enable switches (`obj1_enabled`, `obj2_enabled`, `obj3_enabled`, default OFF) mark
   whether each object is defined. Distance sensors return unknown when the switch is off.
+- 6 text inputs (`zone1_name`–`zone3_name`, `obj1_name`–`obj3_name`, max 32 chars,
+  NVS-backed) allow labelling each zone and object from the GUI. Default values are
+  "Zone 1"–"Zone 3" and "Object 1"–"Object 3".
 - 9 template sensors (`obj{1–3}_t{1–3}_dist`) report the Euclidean distance from each
   fixed object to each of the 3 radar targets, rounded to the nearest whole centimetre
   and clamped to [0, 600] cm. Return unknown (`NAN`) when the object is disabled or the
