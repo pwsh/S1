@@ -32,6 +32,18 @@ inline float zone_nz(float v) {
 // [FIX] Division guard uses std::fabs + y_straddle short-circuit instead of
 // the previous '== 0 ? 1e-6f' branch.  This matches the optimised approach
 // already used in LD2450::is_in_exclusion_zone() in s1.h.
+// Euclidean distance from a fixed object (ox, oy) to a radar target (tx, ty).
+// Returns 0 when the target is absent (tx == 0 && ty == 0), otherwise the
+// straight-line distance clamped to [0, 600] cm.
+inline float obj_dist(float ox, float oy, float tx, float ty) {
+  float dx = ox - tx;
+  float dy = oy - ty;
+  float d = std::sqrt(dx * dx + dy * dy);
+  if (d < 0.0f) d = 0.0f;
+  if (d > 600.0f) d = 600.0f;
+  return d;
+}
+
 inline bool zone_in_poly(float px, float py, const float* xs, const float* ys, int n) {
   bool inside = false;
   for (int i = 0, j = n - 1; i < n; j = i++) {

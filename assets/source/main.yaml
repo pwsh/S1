@@ -178,6 +178,30 @@ switch:
           id(s1_sensor)->restart_module();
 
   - platform: template
+    id: obj1_enabled
+    name: "Object 1 | Enabled"
+    icon: mdi:map-marker-check
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: template
+    id: obj2_enabled
+    name: "Object 2 | Enabled"
+    icon: mdi:map-marker-check
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: template
+    id: obj3_enabled
+    name: "Object 3 | Enabled"
+    icon: mdi:map-marker-check
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: template
     id: radar_tracking_mode_switch
     name: "RADAR | Single Target"
     icon: mdi:account
@@ -325,6 +349,107 @@ sensor:
       if (id(target2_distance).state > 0) count++;
       if (id(target3_distance).state > 0) count++;
       return count;
+
+  # Object-to-target distances. Returns 0 when the target is absent.
+  # Distance clamped to [0, 600] cm via obj_dist() in zone_helpers.h.
+  - platform: template
+    name: "Object 1 | Target 1 Distance"
+    id: obj1_t1_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj1_enabled).state || id(target1_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target1_x).state, id(target1_y).state));
+
+  - platform: template
+    name: "Object 1 | Target 2 Distance"
+    id: obj1_t2_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj1_enabled).state || id(target2_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target2_x).state, id(target2_y).state));
+
+  - platform: template
+    name: "Object 1 | Target 3 Distance"
+    id: obj1_t3_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj1_enabled).state || id(target3_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target3_x).state, id(target3_y).state));
+
+  - platform: template
+    name: "Object 2 | Target 1 Distance"
+    id: obj2_t1_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj2_enabled).state || id(target1_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target1_x).state, id(target1_y).state));
+
+  - platform: template
+    name: "Object 2 | Target 2 Distance"
+    id: obj2_t2_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj2_enabled).state || id(target2_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target2_x).state, id(target2_y).state));
+
+  - platform: template
+    name: "Object 2 | Target 3 Distance"
+    id: obj2_t3_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj2_enabled).state || id(target3_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target3_x).state, id(target3_y).state));
+
+  - platform: template
+    name: "Object 3 | Target 1 Distance"
+    id: obj3_t1_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj3_enabled).state || id(target1_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target1_x).state, id(target1_y).state));
+
+  - platform: template
+    name: "Object 3 | Target 2 Distance"
+    id: obj3_t2_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj3_enabled).state || id(target2_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target2_x).state, id(target2_y).state));
+
+  - platform: template
+    name: "Object 3 | Target 3 Distance"
+    id: obj3_t3_dist
+    icon: mdi:map-marker-distance
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    update_interval: 1s
+    lambda: |-
+      if (!id(obj3_enabled).state || id(target3_distance).state <= 0) return NAN;
+      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target3_x).state, id(target3_y).state));
 
   - platform: template
     name: "Zone 1 Target Count"
@@ -1453,6 +1578,91 @@ number:
     optimistic: true
     restore_value: true
     mode: box
+
+  # Object placement — fixed points whose distance to each radar target is reported.
+  - platform: template
+    id: obj1_x
+    name: "Object 1 X"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: -600
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj1_y
+    name: "Object 1 Y"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj2_x
+    name: "Object 2 X"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: -600
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj2_y
+    name: "Object 2 Y"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj3_x
+    name: "Object 3 X"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: -600
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj3_y
+    name: "Object 3 Y"
+    icon: mdi:map-marker
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
 
 binary_sensor:
   - platform: status

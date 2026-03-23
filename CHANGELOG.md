@@ -16,6 +16,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `Zone Sensor Interval` number entity (`id: zone_update_interval`, 0.1–60 s, default
   1.0 s, NVS-backed): controls how often the 6 zone binary sensor lambdas re-evaluate
   the polygon test. Exposed in the GUI under the config entity category.
+- Object placement: 6 number entities (`obj1_x/y`, `obj2_x/y`, `obj3_x/y`, ±600 / 0–600 cm,
+  NVS-backed, config category) define up to 3 fixed points on the radar plane.
+- 3 enable switches (`obj1_enabled`, `obj2_enabled`, `obj3_enabled`, default OFF) mark
+  whether each object is defined. Distance sensors return unknown when the switch is off.
+- 9 template sensors (`obj{1–3}_t{1–3}_dist`) report the Euclidean distance from each
+  fixed object to each of the 3 radar targets, rounded to the nearest whole centimetre
+  and clamped to [0, 600] cm. Return unknown (`NAN`) when the object is disabled or the
+  target is not detected. Uses `obj_dist()` added to `zone_helpers.h`.
 
 ### Changed
 - All 9 zone template-sensor lambdas (Zone 1–3 × target-count / presence / movement)
