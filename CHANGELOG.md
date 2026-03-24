@@ -22,15 +22,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   whether each object is defined. Distance sensors return unknown when the switch is off.
 - 6 text inputs (`zone1_name`–`zone3_name`, `obj1_name`–`obj3_name`, max 32 chars,
   NVS-backed) allow labelling each zone and object from the GUI. Default values are
-  "Zone 1"–"Zone 3" and "Object 1"–"Object 3". Each input carries an `on_value`
-  handler that immediately renames all related entities (presence, movement, target
-  count, all coordinate/threshold/delay numbers, enable switch, distance sensors).
-  A second `on_boot` handler (priority -100) reapplies the saved names on startup
-  after NVS restore, so display names survive reboots.
-- 9 template sensors (`obj{1–3}_t{1–3}_dist`) report the Euclidean distance from each
-  fixed object to each of the 3 radar targets, rounded to the nearest whole centimetre
-  and clamped to [0, 600] cm. Return unknown (`NAN`) when the object is disabled or the
-  target is not detected. Uses `obj_dist()` added to `zone_helpers.h`.
+  "Zone 1"–"Zone 3" and "Object 1"–"Object 3". Note: ESPHome 2024.x removed the
+  public `set_name()` API from `EntityBase`; entity display names are therefore
+  static (set at compile time). The text inputs serve as user-defined labels visible
+  in the device GUI and stored in NVS across reboots.
+- 3 closest-target sensors (`obj{1–3}_closest_dist`): distance from each object to the
+  nearest active target using 5-sample smoothed positions, rounded to the nearest whole
+  cm. Returns unknown when disabled or no target is detected. Replaces the previous 9
+  per-target distance sensors.
+- 3 halo radius numbers (`obj{1–3}_halo`, 0–600 cm, default 50 cm, NVS-backed): define
+  a configurable detection radius around each object.
+- 3 halo binary sensors (`obj{1–3}_in_halo`): true when any smoothed target position is
+  within the object's halo radius.
+- Target position smoothing: `TargetSmoothBuf` added to `zone_helpers.h`; shared buffers
+  `g_smooth_t1/t2/t3` store the last 5 active positions per target. Zone presence/
+  movement checks and all object calculations use the 5-sample mean. Buffers updated
+  once per cycle in the `obj1_closest_dist` lambda.
+- `Processing Time` sensor (`processing_time`, 5 s interval): re-runs all 6 zone polygon
+  evaluations and 3 object distance checks in a single timed pass and reports elapsed
+  microseconds. Uses `volatile` intermediates to prevent dead-code elimination.
 
 ### Changed
 - All 9 zone template-sensor lambdas (Zone 1–3 × target-count / presence / movement)

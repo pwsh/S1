@@ -1,3 +1,11 @@
+substitutions:
+  zone1_label: "Zone 1"
+  zone2_label: "Zone 2"
+  zone3_label: "Zone 3"
+  obj1_label:  "Object 1"
+  obj2_label:  "Object 2"
+  obj3_label:  "Object 3"
+
 esphome:
   name: sensy-one
   friendly_name: Sensy One
@@ -46,113 +54,6 @@ esphome:
                 state: false
             - lambda: |-
                 id(s1_sensor)->set_multi_target_tracking();
-
-  - priority: -100
-    then:
-      - lambda: |-
-          // Reapply zone and object display names from NVS-restored text entities.
-          {
-            std::string n = id(zone1_name).state;
-            id(zone1_target_count)->set_name((n + " Target Count").c_str());
-            id(zone1_points_count)->set_name((n + " Points Count").c_str());
-            id(zone1_p1_x)->set_name((n + " P1 X").c_str());
-            id(zone1_p1_y)->set_name((n + " P1 Y").c_str());
-            id(zone1_p2_x)->set_name((n + " P2 X").c_str());
-            id(zone1_p2_y)->set_name((n + " P2 Y").c_str());
-            id(zone1_p3_x)->set_name((n + " P3 X").c_str());
-            id(zone1_p3_y)->set_name((n + " P3 Y").c_str());
-            id(zone1_p4_x)->set_name((n + " P4 X").c_str());
-            id(zone1_p4_y)->set_name((n + " P4 Y").c_str());
-            id(zone1_p5_x)->set_name((n + " P5 X").c_str());
-            id(zone1_p5_y)->set_name((n + " P5 Y").c_str());
-            id(zone1_p6_x)->set_name((n + " P6 X").c_str());
-            id(zone1_p6_y)->set_name((n + " P6 Y").c_str());
-            id(zone1_p7_x)->set_name((n + " P7 X").c_str());
-            id(zone1_p7_y)->set_name((n + " P7 Y").c_str());
-            id(zone1_p8_x)->set_name((n + " P8 X").c_str());
-            id(zone1_p8_y)->set_name((n + " P8 Y").c_str());
-            id(zone1_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-            id(zone1_presence_delay)->set_name((n + " Presence Delay").c_str());
-            id(zone1_presence_bs)->set_name((n + " Presence").c_str());
-            id(zone1_movement_bs)->set_name((n + " Movement").c_str());
-          }
-          {
-            std::string n = id(zone2_name).state;
-            id(zone2_target_count)->set_name((n + " Target Count").c_str());
-            id(zone2_points_count)->set_name((n + " Points Count").c_str());
-            id(zone2_p1_x)->set_name((n + " P1 X").c_str());
-            id(zone2_p1_y)->set_name((n + " P1 Y").c_str());
-            id(zone2_p2_x)->set_name((n + " P2 X").c_str());
-            id(zone2_p2_y)->set_name((n + " P2 Y").c_str());
-            id(zone2_p3_x)->set_name((n + " P3 X").c_str());
-            id(zone2_p3_y)->set_name((n + " P3 Y").c_str());
-            id(zone2_p4_x)->set_name((n + " P4 X").c_str());
-            id(zone2_p4_y)->set_name((n + " P4 Y").c_str());
-            id(zone2_p5_x)->set_name((n + " P5 X").c_str());
-            id(zone2_p5_y)->set_name((n + " P5 Y").c_str());
-            id(zone2_p6_x)->set_name((n + " P6 X").c_str());
-            id(zone2_p6_y)->set_name((n + " P6 Y").c_str());
-            id(zone2_p7_x)->set_name((n + " P7 X").c_str());
-            id(zone2_p7_y)->set_name((n + " P7 Y").c_str());
-            id(zone2_p8_x)->set_name((n + " P8 X").c_str());
-            id(zone2_p8_y)->set_name((n + " P8 Y").c_str());
-            id(zone2_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-            id(zone2_presence_delay)->set_name((n + " Presence Delay").c_str());
-            id(zone2_presence_bs)->set_name((n + " Presence").c_str());
-            id(zone2_movement_bs)->set_name((n + " Movement").c_str());
-          }
-          {
-            std::string n = id(zone3_name).state;
-            id(zone3_target_count)->set_name((n + " Target Count").c_str());
-            id(zone3_points_count)->set_name((n + " Points Count").c_str());
-            id(zone3_p1_x)->set_name((n + " P1 X").c_str());
-            id(zone3_p1_y)->set_name((n + " P1 Y").c_str());
-            id(zone3_p2_x)->set_name((n + " P2 X").c_str());
-            id(zone3_p2_y)->set_name((n + " P2 Y").c_str());
-            id(zone3_p3_x)->set_name((n + " P3 X").c_str());
-            id(zone3_p3_y)->set_name((n + " P3 Y").c_str());
-            id(zone3_p4_x)->set_name((n + " P4 X").c_str());
-            id(zone3_p4_y)->set_name((n + " P4 Y").c_str());
-            id(zone3_p5_x)->set_name((n + " P5 X").c_str());
-            id(zone3_p5_y)->set_name((n + " P5 Y").c_str());
-            id(zone3_p6_x)->set_name((n + " P6 X").c_str());
-            id(zone3_p6_y)->set_name((n + " P6 Y").c_str());
-            id(zone3_p7_x)->set_name((n + " P7 X").c_str());
-            id(zone3_p7_y)->set_name((n + " P7 Y").c_str());
-            id(zone3_p8_x)->set_name((n + " P8 X").c_str());
-            id(zone3_p8_y)->set_name((n + " P8 Y").c_str());
-            id(zone3_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-            id(zone3_presence_delay)->set_name((n + " Presence Delay").c_str());
-            id(zone3_presence_bs)->set_name((n + " Presence").c_str());
-            id(zone3_movement_bs)->set_name((n + " Movement").c_str());
-          }
-          {
-            std::string n = id(obj1_name).state;
-            id(obj1_enabled)->set_name((n + " | Enabled").c_str());
-            id(obj1_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-            id(obj1_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-            id(obj1_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-            id(obj1_x)->set_name((n + " X").c_str());
-            id(obj1_y)->set_name((n + " Y").c_str());
-          }
-          {
-            std::string n = id(obj2_name).state;
-            id(obj2_enabled)->set_name((n + " | Enabled").c_str());
-            id(obj2_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-            id(obj2_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-            id(obj2_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-            id(obj2_x)->set_name((n + " X").c_str());
-            id(obj2_y)->set_name((n + " Y").c_str());
-          }
-          {
-            std::string n = id(obj3_name).state;
-            id(obj3_enabled)->set_name((n + " | Enabled").c_str());
-            id(obj3_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-            id(obj3_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-            id(obj3_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-            id(obj3_x)->set_name((n + " X").c_str());
-            id(obj3_y)->set_name((n + " Y").c_str());
-          }
 
 external_components:
   - source:
@@ -286,7 +187,7 @@ switch:
 
   - platform: template
     id: obj1_enabled
-    name: "Object 1 | Enabled"
+    name: "${obj1_label} | Enabled"
     icon: mdi:map-marker-check
     entity_category: config
     optimistic: true
@@ -294,7 +195,7 @@ switch:
 
   - platform: template
     id: obj2_enabled
-    name: "Object 2 | Enabled"
+    name: "${obj2_label} | Enabled"
     icon: mdi:map-marker-check
     entity_category: config
     optimistic: true
@@ -302,7 +203,7 @@ switch:
 
   - platform: template
     id: obj3_enabled
-    name: "Object 3 | Enabled"
+    name: "${obj3_label} | Enabled"
     icon: mdi:map-marker-check
     entity_category: config
     optimistic: true
@@ -457,109 +358,158 @@ sensor:
       if (id(target3_distance).state > 0) count++;
       return count;
 
-  # Object-to-target distances. Returns 0 when the target is absent.
-  # Distance clamped to [0, 600] cm via obj_dist() in zone_helpers.h.
+  # Closest smoothed target distance per object. Returns NAN when the object
+  # is disabled or no target is active. Uses 5-sample mean positions from
+  # g_smooth_t1/t2/t3 (zone_helpers.h). obj1 also updates those buffers so
+  # zone binary sensors share the same smoothed positions each cycle.
   - platform: template
-    name: "Object 1 | Target 1 Distance"
-    id: obj1_t1_dist
+    name: "${obj1_label} | Closest Target"
+    id: obj1_closest_dist
     icon: mdi:map-marker-distance
     unit_of_measurement: "cm"
     accuracy_decimals: 0
     update_interval: 1s
     lambda: |-
-      if (!id(obj1_enabled).state || id(target1_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target1_x).state, id(target1_y).state));
+      if (id(target1_distance).state > 0) g_smooth_t1.push(id(target1_x).state, id(target1_y).state);
+      if (id(target2_distance).state > 0) g_smooth_t2.push(id(target2_x).state, id(target2_y).state);
+      if (id(target3_distance).state > 0) g_smooth_t3.push(id(target3_x).state, id(target3_y).state);
+      if (!id(obj1_enabled).state) return NAN;
+      float ox = id(obj1_x).state, oy = id(obj1_y).state;
+      float best = NAN;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()); if (std::isnan(best) || d < best) best = d; }
+      return std::isnan(best) ? NAN : roundf(best);
 
   - platform: template
-    name: "Object 1 | Target 2 Distance"
-    id: obj1_t2_dist
+    name: "${obj2_label} | Closest Target"
+    id: obj2_closest_dist
     icon: mdi:map-marker-distance
     unit_of_measurement: "cm"
     accuracy_decimals: 0
     update_interval: 1s
     lambda: |-
-      if (!id(obj1_enabled).state || id(target2_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target2_x).state, id(target2_y).state));
+      if (!id(obj2_enabled).state) return NAN;
+      float ox = id(obj2_x).state, oy = id(obj2_y).state;
+      float best = NAN;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()); if (std::isnan(best) || d < best) best = d; }
+      return std::isnan(best) ? NAN : roundf(best);
 
   - platform: template
-    name: "Object 1 | Target 3 Distance"
-    id: obj1_t3_dist
+    name: "${obj3_label} | Closest Target"
+    id: obj3_closest_dist
     icon: mdi:map-marker-distance
     unit_of_measurement: "cm"
     accuracy_decimals: 0
     update_interval: 1s
     lambda: |-
-      if (!id(obj1_enabled).state || id(target3_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj1_x).state, id(obj1_y).state, id(target3_x).state, id(target3_y).state));
+      if (!id(obj3_enabled).state) return NAN;
+      float ox = id(obj3_x).state, oy = id(obj3_y).state;
+      float best = NAN;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()); if (std::isnan(best) || d < best) best = d; }
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0) { float d = obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()); if (std::isnan(best) || d < best) best = d; }
+      return std::isnan(best) ? NAN : roundf(best);
 
+  # Processing time: runs all zone polygon checks and object distance
+  # calculations once and reports how long they took. Capped at 5 s so it
+  # does not add meaningful overhead to normal detection. Uses volatile
+  # intermediates to prevent the compiler from optimising away the work.
   - platform: template
-    name: "Object 2 | Target 1 Distance"
-    id: obj2_t1_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
+    name: "Processing Time"
+    id: processing_time
+    icon: mdi:timer-cog-outline
+    unit_of_measurement: "µs"
     accuracy_decimals: 0
-    update_interval: 1s
+    update_interval: 5s
     lambda: |-
-      if (!id(obj2_enabled).state || id(target1_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target1_x).state, id(target1_y).state));
+      unsigned long t0 = micros();
+      const int MAX_PTS = 8;
+      float xs[MAX_PTS], ys[MAX_PTS];
+      // Zone 1
+      {
+        int n = (int)id(zone1_points_count).state;
+        if (n >= 3 && n <= MAX_PTS) {
+          xs[0]=zone_nz(id(zone1_p1_x).state); ys[0]=zone_nz(id(zone1_p1_y).state);
+          xs[1]=zone_nz(id(zone1_p2_x).state); ys[1]=zone_nz(id(zone1_p2_y).state);
+          xs[2]=zone_nz(id(zone1_p3_x).state); ys[2]=zone_nz(id(zone1_p3_y).state);
+          xs[3]=zone_nz(id(zone1_p4_x).state); ys[3]=zone_nz(id(zone1_p4_y).state);
+          xs[4]=zone_nz(id(zone1_p5_x).state); ys[4]=zone_nz(id(zone1_p5_y).state);
+          xs[5]=zone_nz(id(zone1_p6_x).state); ys[5]=zone_nz(id(zone1_p6_y).state);
+          xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
+          xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
+          float thr = id(zone1_movement_threshold).state;
+          volatile bool p = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          volatile bool m = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&std::abs(id(target1_speed).state)>thr&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&std::abs(id(target2_speed).state)>thr&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&std::abs(id(target3_speed).state)>thr&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          (void)p; (void)m;
+        }
+      }
+      // Zone 2
+      {
+        int n = (int)id(zone2_points_count).state;
+        if (n >= 3 && n <= MAX_PTS) {
+          xs[0]=zone_nz(id(zone2_p1_x).state); ys[0]=zone_nz(id(zone2_p1_y).state);
+          xs[1]=zone_nz(id(zone2_p2_x).state); ys[1]=zone_nz(id(zone2_p2_y).state);
+          xs[2]=zone_nz(id(zone2_p3_x).state); ys[2]=zone_nz(id(zone2_p3_y).state);
+          xs[3]=zone_nz(id(zone2_p4_x).state); ys[3]=zone_nz(id(zone2_p4_y).state);
+          xs[4]=zone_nz(id(zone2_p5_x).state); ys[4]=zone_nz(id(zone2_p5_y).state);
+          xs[5]=zone_nz(id(zone2_p6_x).state); ys[5]=zone_nz(id(zone2_p6_y).state);
+          xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
+          xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
+          float thr = id(zone2_movement_threshold).state;
+          volatile bool p = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          volatile bool m = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&std::abs(id(target1_speed).state)>thr&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&std::abs(id(target2_speed).state)>thr&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&std::abs(id(target3_speed).state)>thr&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          (void)p; (void)m;
+        }
+      }
+      // Zone 3
+      {
+        int n = (int)id(zone3_points_count).state;
+        if (n >= 3 && n <= MAX_PTS) {
+          xs[0]=zone_nz(id(zone3_p1_x).state); ys[0]=zone_nz(id(zone3_p1_y).state);
+          xs[1]=zone_nz(id(zone3_p2_x).state); ys[1]=zone_nz(id(zone3_p2_y).state);
+          xs[2]=zone_nz(id(zone3_p3_x).state); ys[2]=zone_nz(id(zone3_p3_y).state);
+          xs[3]=zone_nz(id(zone3_p4_x).state); ys[3]=zone_nz(id(zone3_p4_y).state);
+          xs[4]=zone_nz(id(zone3_p5_x).state); ys[4]=zone_nz(id(zone3_p5_y).state);
+          xs[5]=zone_nz(id(zone3_p6_x).state); ys[5]=zone_nz(id(zone3_p6_y).state);
+          xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
+          xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
+          float thr = id(zone3_movement_threshold).state;
+          volatile bool p = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          volatile bool m = (id(target1_distance).state>0&&g_smooth_t1.cnt>0&&std::abs(id(target1_speed).state)>thr&&zone_in_poly(g_smooth_t1.sx(),g_smooth_t1.sy(),xs,ys,n))
+                          ||(id(target2_distance).state>0&&g_smooth_t2.cnt>0&&std::abs(id(target2_speed).state)>thr&&zone_in_poly(g_smooth_t2.sx(),g_smooth_t2.sy(),xs,ys,n))
+                          ||(id(target3_distance).state>0&&g_smooth_t3.cnt>0&&std::abs(id(target3_speed).state)>thr&&zone_in_poly(g_smooth_t3.sx(),g_smooth_t3.sy(),xs,ys,n));
+          (void)p; (void)m;
+        }
+      }
+      // Object distances
+      auto eval_obj = [&](bool en, float ox, float oy) {
+        if (!en) return;
+        volatile float b = NAN;
+        if (id(target1_distance).state>0&&g_smooth_t1.cnt>0) { float d=obj_dist(ox,oy,g_smooth_t1.sx(),g_smooth_t1.sy()); if(std::isnan(b)||d<b) b=d; }
+        if (id(target2_distance).state>0&&g_smooth_t2.cnt>0) { float d=obj_dist(ox,oy,g_smooth_t2.sx(),g_smooth_t2.sy()); if(std::isnan(b)||d<b) b=d; }
+        if (id(target3_distance).state>0&&g_smooth_t3.cnt>0) { float d=obj_dist(ox,oy,g_smooth_t3.sx(),g_smooth_t3.sy()); if(std::isnan(b)||d<b) b=d; }
+        (void)b;
+      };
+      eval_obj(id(obj1_enabled).state, id(obj1_x).state, id(obj1_y).state);
+      eval_obj(id(obj2_enabled).state, id(obj2_x).state, id(obj2_y).state);
+      eval_obj(id(obj3_enabled).state, id(obj3_x).state, id(obj3_y).state);
+      return (float)(micros() - t0);
 
   - platform: template
-    name: "Object 2 | Target 2 Distance"
-    id: obj2_t2_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    update_interval: 1s
-    lambda: |-
-      if (!id(obj2_enabled).state || id(target2_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target2_x).state, id(target2_y).state));
-
-  - platform: template
-    name: "Object 2 | Target 3 Distance"
-    id: obj2_t3_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    update_interval: 1s
-    lambda: |-
-      if (!id(obj2_enabled).state || id(target3_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj2_x).state, id(obj2_y).state, id(target3_x).state, id(target3_y).state));
-
-  - platform: template
-    name: "Object 3 | Target 1 Distance"
-    id: obj3_t1_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    update_interval: 1s
-    lambda: |-
-      if (!id(obj3_enabled).state || id(target1_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target1_x).state, id(target1_y).state));
-
-  - platform: template
-    name: "Object 3 | Target 2 Distance"
-    id: obj3_t2_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    update_interval: 1s
-    lambda: |-
-      if (!id(obj3_enabled).state || id(target2_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target2_x).state, id(target2_y).state));
-
-  - platform: template
-    name: "Object 3 | Target 3 Distance"
-    id: obj3_t3_dist
-    icon: mdi:map-marker-distance
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    update_interval: 1s
-    lambda: |-
-      if (!id(obj3_enabled).state || id(target3_distance).state <= 0) return NAN;
-      return roundf(obj_dist(id(obj3_x).state, id(obj3_y).state, id(target3_x).state, id(target3_y).state));
-
-  - platform: template
-    name: "Zone 1 Target Count"
+    name: "${zone1_label} Target Count"
     icon: mdi:counter
     id: zone1_target_count
     unit_of_measurement: ""
@@ -586,7 +536,7 @@ sensor:
       return count;
 
   - platform: template
-    name: "Zone 2 Target Count"
+    name: "${zone2_label} Target Count"
     icon: mdi:counter
     id: zone2_target_count
     unit_of_measurement: ""
@@ -613,7 +563,7 @@ sensor:
       return count;
 
   - platform: template
-    name: "Zone 3 Target Count"
+    name: "${zone3_label} Target Count"
     icon: mdi:counter
     id: zone3_target_count
     unit_of_measurement: ""
@@ -919,7 +869,7 @@ number:
 
   - platform: template
     id: zone1_points_count
-    name: "Zone 1 Points Count"
+    name: "${zone1_label} Points Count"
     icon: mdi:counter
     unit_of_measurement: "pts"
     min_value: 0
@@ -932,7 +882,7 @@ number:
 
   - platform: template
     id: zone1_p1_x
-    name: "Zone 1 P1 X"
+    name: "${zone1_label} P1 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -944,7 +894,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p1_y
-    name: "Zone 1 P1 Y"
+    name: "${zone1_label} P1 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -957,7 +907,7 @@ number:
 
   - platform: template
     id: zone1_p2_x
-    name: "Zone 1 P2 X"
+    name: "${zone1_label} P2 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -969,7 +919,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p2_y
-    name: "Zone 1 P2 Y"
+    name: "${zone1_label} P2 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -982,7 +932,7 @@ number:
 
   - platform: template
     id: zone1_p3_x
-    name: "Zone 1 P3 X"
+    name: "${zone1_label} P3 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -994,7 +944,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p3_y
-    name: "Zone 1 P3 Y"
+    name: "${zone1_label} P3 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1007,7 +957,7 @@ number:
 
   - platform: template
     id: zone1_p4_x
-    name: "Zone 1 P4 X"
+    name: "${zone1_label} P4 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1019,7 +969,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p4_y
-    name: "Zone 1 P4 Y"
+    name: "${zone1_label} P4 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1032,7 +982,7 @@ number:
 
   - platform: template
     id: zone1_p5_x
-    name: "Zone 1 P5 X"
+    name: "${zone1_label} P5 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1044,7 +994,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p5_y
-    name: "Zone 1 P5 Y"
+    name: "${zone1_label} P5 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1057,7 +1007,7 @@ number:
 
   - platform: template
     id: zone1_p6_x
-    name: "Zone 1 P6 X"
+    name: "${zone1_label} P6 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1069,7 +1019,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p6_y
-    name: "Zone 1 P6 Y"
+    name: "${zone1_label} P6 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1082,7 +1032,7 @@ number:
 
   - platform: template
     id: zone1_p7_x
-    name: "Zone 1 P7 X"
+    name: "${zone1_label} P7 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1094,7 +1044,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p7_y
-    name: "Zone 1 P7 Y"
+    name: "${zone1_label} P7 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1107,7 +1057,7 @@ number:
 
   - platform: template
     id: zone1_p8_x
-    name: "Zone 1 P8 X"
+    name: "${zone1_label} P8 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1119,7 +1069,7 @@ number:
     mode: box
   - platform: template
     id: zone1_p8_y
-    name: "Zone 1 P8 Y"
+    name: "${zone1_label} P8 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1132,7 +1082,7 @@ number:
 
   - platform: template
     id: zone1_movement_threshold
-    name: "Zone 1 Movement Threshold"
+    name: "${zone1_label} Movement Threshold"
     icon: mdi:motion-sensor
     unit_of_measurement: "cm/s"
     min_value: 0
@@ -1145,7 +1095,7 @@ number:
 
   - platform: template
     id: zone1_presence_delay
-    name: "Zone 1 Presence Delay"
+    name: "${zone1_label} Presence Delay"
     icon: mdi:timer-outline
     unit_of_measurement: "s"
     min_value: 0
@@ -1158,7 +1108,7 @@ number:
 
   - platform: template
     id: zone2_points_count
-    name: "Zone 2 Points Count"
+    name: "${zone2_label} Points Count"
     icon: mdi:counter
     unit_of_measurement: "pts"
     min_value: 0
@@ -1171,7 +1121,7 @@ number:
 
   - platform: template
     id: zone2_p1_x
-    name: "Zone 2 P1 X"
+    name: "${zone2_label} P1 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1183,7 +1133,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p1_y
-    name: "Zone 2 P1 Y"
+    name: "${zone2_label} P1 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1196,7 +1146,7 @@ number:
 
   - platform: template
     id: zone2_p2_x
-    name: "Zone 2 P2 X"
+    name: "${zone2_label} P2 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1208,7 +1158,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p2_y
-    name: "Zone 2 P2 Y"
+    name: "${zone2_label} P2 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1221,7 +1171,7 @@ number:
 
   - platform: template
     id: zone2_p3_x
-    name: "Zone 2 P3 X"
+    name: "${zone2_label} P3 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1233,7 +1183,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p3_y
-    name: "Zone 2 P3 Y"
+    name: "${zone2_label} P3 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1246,7 +1196,7 @@ number:
 
   - platform: template
     id: zone2_p4_x
-    name: "Zone 2 P4 X"
+    name: "${zone2_label} P4 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1258,7 +1208,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p4_y
-    name: "Zone 2 P4 Y"
+    name: "${zone2_label} P4 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1271,7 +1221,7 @@ number:
 
   - platform: template
     id: zone2_p5_x
-    name: "Zone 2 P5 X"
+    name: "${zone2_label} P5 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1283,7 +1233,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p5_y
-    name: "Zone 2 P5 Y"
+    name: "${zone2_label} P5 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1296,7 +1246,7 @@ number:
 
   - platform: template
     id: zone2_p6_x
-    name: "Zone 2 P6 X"
+    name: "${zone2_label} P6 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1308,7 +1258,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p6_y
-    name: "Zone 2 P6 Y"
+    name: "${zone2_label} P6 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1321,7 +1271,7 @@ number:
 
   - platform: template
     id: zone2_p7_x
-    name: "Zone 2 P7 X"
+    name: "${zone2_label} P7 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1333,7 +1283,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p7_y
-    name: "Zone 2 P7 Y"
+    name: "${zone2_label} P7 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1346,7 +1296,7 @@ number:
 
   - platform: template
     id: zone2_p8_x
-    name: "Zone 2 P8 X"
+    name: "${zone2_label} P8 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1358,7 +1308,7 @@ number:
     mode: box
   - platform: template
     id: zone2_p8_y
-    name: "Zone 2 P8 Y"
+    name: "${zone2_label} P8 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1371,7 +1321,7 @@ number:
 
   - platform: template
     id: zone2_movement_threshold
-    name: "Zone 2 Movement Threshold"
+    name: "${zone2_label} Movement Threshold"
     icon: mdi:motion-sensor
     unit_of_measurement: "cm/s"
     min_value: 0
@@ -1384,7 +1334,7 @@ number:
 
   - platform: template
     id: zone2_presence_delay
-    name: "Zone 2 Presence Delay"
+    name: "${zone2_label} Presence Delay"
     icon: mdi:timer-outline
     unit_of_measurement: "s"
     min_value: 0
@@ -1397,7 +1347,7 @@ number:
 
   - platform: template
     id: zone3_points_count
-    name: "Zone 3 Points Count"
+    name: "${zone3_label} Points Count"
     icon: mdi:counter
     unit_of_measurement: "pts"
     min_value: 0
@@ -1410,7 +1360,7 @@ number:
 
   - platform: template
     id: zone3_p1_x
-    name: "Zone 3 P1 X"
+    name: "${zone3_label} P1 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1422,7 +1372,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p1_y
-    name: "Zone 3 P1 Y"
+    name: "${zone3_label} P1 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1435,7 +1385,7 @@ number:
 
   - platform: template
     id: zone3_p2_x
-    name: "Zone 3 P2 X"
+    name: "${zone3_label} P2 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1447,7 +1397,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p2_y
-    name: "Zone 3 P2 Y"
+    name: "${zone3_label} P2 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1460,7 +1410,7 @@ number:
 
   - platform: template
     id: zone3_p3_x
-    name: "Zone 3 P3 X"
+    name: "${zone3_label} P3 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1472,7 +1422,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p3_y
-    name: "Zone 3 P3 Y"
+    name: "${zone3_label} P3 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1485,7 +1435,7 @@ number:
 
   - platform: template
     id: zone3_p4_x
-    name: "Zone 3 P4 X"
+    name: "${zone3_label} P4 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1497,7 +1447,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p4_y
-    name: "Zone 3 P4 Y"
+    name: "${zone3_label} P4 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1510,7 +1460,7 @@ number:
 
   - platform: template
     id: zone3_p5_x
-    name: "Zone 3 P5 X"
+    name: "${zone3_label} P5 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1522,7 +1472,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p5_y
-    name: "Zone 3 P5 Y"
+    name: "${zone3_label} P5 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1535,7 +1485,7 @@ number:
 
   - platform: template
     id: zone3_p6_x
-    name: "Zone 3 P6 X"
+    name: "${zone3_label} P6 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1547,7 +1497,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p6_y
-    name: "Zone 3 P6 Y"
+    name: "${zone3_label} P6 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1560,7 +1510,7 @@ number:
 
   - platform: template
     id: zone3_p7_x
-    name: "Zone 3 P7 X"
+    name: "${zone3_label} P7 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1572,7 +1522,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p7_y
-    name: "Zone 3 P7 Y"
+    name: "${zone3_label} P7 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1585,7 +1535,7 @@ number:
 
   - platform: template
     id: zone3_p8_x
-    name: "Zone 3 P8 X"
+    name: "${zone3_label} P8 X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1597,7 +1547,7 @@ number:
     mode: box
   - platform: template
     id: zone3_p8_y
-    name: "Zone 3 P8 Y"
+    name: "${zone3_label} P8 Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1610,7 +1560,7 @@ number:
 
   - platform: template
     id: zone3_movement_threshold
-    name: "Zone 3 Movement Threshold"
+    name: "${zone3_label} Movement Threshold"
     icon: mdi:motion-sensor
     unit_of_measurement: "cm/s"
     min_value: 0
@@ -1623,7 +1573,7 @@ number:
 
   - platform: template
     id: zone3_presence_delay
-    name: "Zone 3 Presence Delay"
+    name: "${zone3_label} Presence Delay"
     icon: mdi:timer-outline
     unit_of_measurement: "s"
     min_value: 0
@@ -1689,7 +1639,7 @@ number:
   # Object placement — fixed points whose distance to each radar target is reported.
   - platform: template
     id: obj1_x
-    name: "Object 1 X"
+    name: "${obj1_label} X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1703,7 +1653,7 @@ number:
 
   - platform: template
     id: obj1_y
-    name: "Object 1 Y"
+    name: "${obj1_label} Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1717,7 +1667,7 @@ number:
 
   - platform: template
     id: obj2_x
-    name: "Object 2 X"
+    name: "${obj2_label} X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1731,7 +1681,7 @@ number:
 
   - platform: template
     id: obj2_y
-    name: "Object 2 Y"
+    name: "${obj2_label} Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
@@ -1745,7 +1695,7 @@ number:
 
   - platform: template
     id: obj3_x
-    name: "Object 3 X"
+    name: "${obj3_label} X"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: -600
@@ -1759,13 +1709,55 @@ number:
 
   - platform: template
     id: obj3_y
-    name: "Object 3 Y"
+    name: "${obj3_label} Y"
     icon: mdi:map-marker
     unit_of_measurement: "cm"
     min_value: 0
     max_value: 600
     step: 1
     initial_value: 0
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj1_halo
+    name: "${obj1_label} | Halo Radius"
+    icon: mdi:circle-expand
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 50
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj2_halo
+    name: "${obj2_label} | Halo Radius"
+    icon: mdi:circle-expand
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 50
+    optimistic: true
+    restore_value: true
+    mode: box
+    entity_category: config
+
+  - platform: template
+    id: obj3_halo
+    name: "${obj3_label} | Halo Radius"
+    icon: mdi:circle-expand
+    unit_of_measurement: "cm"
+    min_value: 0
+    max_value: 600
+    step: 1
+    initial_value: 50
     optimistic: true
     restore_value: true
     mode: box
@@ -1804,7 +1796,7 @@ binary_sensor:
 
   - platform: template
     id: zone1_presence_bs
-    name: "Zone 1 Presence"
+    name: "${zone1_label} Presence"
     icon: mdi:home-account
     device_class: presence
     lambda: |-
@@ -1831,9 +1823,9 @@ binary_sensor:
           xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
           xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
           last_pres_1 =
-              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+              (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+            || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+            || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
         } else { last_pres_1 = false; }
       }
       if (last_pres_1) { last_off_1 = now; return true; }
@@ -1841,7 +1833,7 @@ binary_sensor:
 
   - platform: template
     id: zone1_movement_bs
-    name: "Zone 1 Movement"
+    name: "${zone1_label} Movement"
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
@@ -1867,14 +1859,14 @@ binary_sensor:
       xs[6]=zone_nz(id(zone1_p7_x).state); ys[6]=zone_nz(id(zone1_p7_y).state);
       xs[7]=zone_nz(id(zone1_p8_x).state); ys[7]=zone_nz(id(zone1_p8_y).state);
       last_mov_1 =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+          (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+        || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+        || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
       return last_mov_1;
 
   - platform: template
     id: zone2_presence_bs
-    name: "Zone 2 Presence"
+    name: "${zone2_label} Presence"
     icon: mdi:home-account
     device_class: presence
     lambda: |-
@@ -1900,9 +1892,9 @@ binary_sensor:
           xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
           xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
           last_pres_2 =
-              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+              (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+            || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+            || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
         } else { last_pres_2 = false; }
       }
       if (last_pres_2) { last_off_2 = now; return true; }
@@ -1910,7 +1902,7 @@ binary_sensor:
 
   - platform: template
     id: zone2_movement_bs
-    name: "Zone 2 Movement"
+    name: "${zone2_label} Movement"
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
@@ -1936,14 +1928,14 @@ binary_sensor:
       xs[6]=zone_nz(id(zone2_p7_x).state); ys[6]=zone_nz(id(zone2_p7_y).state);
       xs[7]=zone_nz(id(zone2_p8_x).state); ys[7]=zone_nz(id(zone2_p8_y).state);
       last_mov_2 =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+          (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+        || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+        || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
       return last_mov_2;
 
   - platform: template
     id: zone3_presence_bs
-    name: "Zone 3 Presence"
+    name: "${zone3_label} Presence"
     icon: mdi:home-account
     device_class: presence
     lambda: |-
@@ -1969,9 +1961,9 @@ binary_sensor:
           xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
           xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
           last_pres_3 =
-              (id(target1_distance).state > 0 && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-            || (id(target2_distance).state > 0 && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-            || (id(target3_distance).state > 0 && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+              (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+            || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+            || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
         } else { last_pres_3 = false; }
       }
       if (last_pres_3) { last_off_3 = now; return true; }
@@ -1979,7 +1971,7 @@ binary_sensor:
 
   - platform: template
     id: zone3_movement_bs
-    name: "Zone 3 Movement"
+    name: "${zone3_label} Movement"
     icon: mdi:motion-sensor
     device_class: motion
     lambda: |-
@@ -2005,185 +1997,125 @@ binary_sensor:
       xs[6]=zone_nz(id(zone3_p7_x).state); ys[6]=zone_nz(id(zone3_p7_y).state);
       xs[7]=zone_nz(id(zone3_p8_x).state); ys[7]=zone_nz(id(zone3_p8_y).state);
       last_mov_3 =
-          (id(target1_distance).state > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(id(target1_x).state, id(target1_y).state, xs, ys, n))
-        || (id(target2_distance).state > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(id(target2_x).state, id(target2_y).state, xs, ys, n))
-        || (id(target3_distance).state > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(id(target3_x).state, id(target3_y).state, xs, ys, n));
+          (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && std::abs(id(target1_speed).state) > thresh && zone_in_poly(g_smooth_t1.sx(), g_smooth_t1.sy(), xs, ys, n))
+        || (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && std::abs(id(target2_speed).state) > thresh && zone_in_poly(g_smooth_t2.sx(), g_smooth_t2.sy(), xs, ys, n))
+        || (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && std::abs(id(target3_speed).state) > thresh && zone_in_poly(g_smooth_t3.sx(), g_smooth_t3.sy(), xs, ys, n));
       return last_mov_3;
+
+  - platform: template
+    id: obj1_in_halo
+    name: "${obj1_label} | In Halo"
+    icon: mdi:circle-expand
+    device_class: motion
+    lambda: |-
+      if (!id(obj1_enabled).state) return false;
+      float r = id(obj1_halo).state;
+      float ox = id(obj1_x).state, oy = id(obj1_y).state;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()) <= r) return true;
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()) <= r) return true;
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()) <= r) return true;
+      return false;
+
+  - platform: template
+    id: obj2_in_halo
+    name: "${obj2_label} | In Halo"
+    icon: mdi:circle-expand
+    device_class: motion
+    lambda: |-
+      if (!id(obj2_enabled).state) return false;
+      float r = id(obj2_halo).state;
+      float ox = id(obj2_x).state, oy = id(obj2_y).state;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()) <= r) return true;
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()) <= r) return true;
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()) <= r) return true;
+      return false;
+
+  - platform: template
+    id: obj3_in_halo
+    name: "${obj3_label} | In Halo"
+    icon: mdi:circle-expand
+    device_class: motion
+    lambda: |-
+      if (!id(obj3_enabled).state) return false;
+      float r = id(obj3_halo).state;
+      float ox = id(obj3_x).state, oy = id(obj3_y).state;
+      if (id(target1_distance).state > 0 && g_smooth_t1.cnt > 0 && obj_dist(ox, oy, g_smooth_t1.sx(), g_smooth_t1.sy()) <= r) return true;
+      if (id(target2_distance).state > 0 && g_smooth_t2.cnt > 0 && obj_dist(ox, oy, g_smooth_t2.sx(), g_smooth_t2.sy()) <= r) return true;
+      if (id(target3_distance).state > 0 && g_smooth_t3.cnt > 0 && obj_dist(ox, oy, g_smooth_t3.sx(), g_smooth_t3.sy()) <= r) return true;
+      return false;
 
 text:
   - platform: template
     id: zone1_name
-    name: "Zone 1 | Name"
+    name: "${zone1_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Zone 1"
+    initial_value: "${zone1_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(zone1_target_count)->set_name((n + " Target Count").c_str());
-          id(zone1_points_count)->set_name((n + " Points Count").c_str());
-          id(zone1_p1_x)->set_name((n + " P1 X").c_str());
-          id(zone1_p1_y)->set_name((n + " P1 Y").c_str());
-          id(zone1_p2_x)->set_name((n + " P2 X").c_str());
-          id(zone1_p2_y)->set_name((n + " P2 Y").c_str());
-          id(zone1_p3_x)->set_name((n + " P3 X").c_str());
-          id(zone1_p3_y)->set_name((n + " P3 Y").c_str());
-          id(zone1_p4_x)->set_name((n + " P4 X").c_str());
-          id(zone1_p4_y)->set_name((n + " P4 Y").c_str());
-          id(zone1_p5_x)->set_name((n + " P5 X").c_str());
-          id(zone1_p5_y)->set_name((n + " P5 Y").c_str());
-          id(zone1_p6_x)->set_name((n + " P6 X").c_str());
-          id(zone1_p6_y)->set_name((n + " P6 Y").c_str());
-          id(zone1_p7_x)->set_name((n + " P7 X").c_str());
-          id(zone1_p7_y)->set_name((n + " P7 Y").c_str());
-          id(zone1_p8_x)->set_name((n + " P8 X").c_str());
-          id(zone1_p8_y)->set_name((n + " P8 Y").c_str());
-          id(zone1_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-          id(zone1_presence_delay)->set_name((n + " Presence Delay").c_str());
-          id(zone1_presence_bs)->set_name((n + " Presence").c_str());
-          id(zone1_movement_bs)->set_name((n + " Movement").c_str());
 
   - platform: template
     id: zone2_name
-    name: "Zone 2 | Name"
+    name: "${zone2_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Zone 2"
+    initial_value: "${zone2_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(zone2_target_count)->set_name((n + " Target Count").c_str());
-          id(zone2_points_count)->set_name((n + " Points Count").c_str());
-          id(zone2_p1_x)->set_name((n + " P1 X").c_str());
-          id(zone2_p1_y)->set_name((n + " P1 Y").c_str());
-          id(zone2_p2_x)->set_name((n + " P2 X").c_str());
-          id(zone2_p2_y)->set_name((n + " P2 Y").c_str());
-          id(zone2_p3_x)->set_name((n + " P3 X").c_str());
-          id(zone2_p3_y)->set_name((n + " P3 Y").c_str());
-          id(zone2_p4_x)->set_name((n + " P4 X").c_str());
-          id(zone2_p4_y)->set_name((n + " P4 Y").c_str());
-          id(zone2_p5_x)->set_name((n + " P5 X").c_str());
-          id(zone2_p5_y)->set_name((n + " P5 Y").c_str());
-          id(zone2_p6_x)->set_name((n + " P6 X").c_str());
-          id(zone2_p6_y)->set_name((n + " P6 Y").c_str());
-          id(zone2_p7_x)->set_name((n + " P7 X").c_str());
-          id(zone2_p7_y)->set_name((n + " P7 Y").c_str());
-          id(zone2_p8_x)->set_name((n + " P8 X").c_str());
-          id(zone2_p8_y)->set_name((n + " P8 Y").c_str());
-          id(zone2_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-          id(zone2_presence_delay)->set_name((n + " Presence Delay").c_str());
-          id(zone2_presence_bs)->set_name((n + " Presence").c_str());
-          id(zone2_movement_bs)->set_name((n + " Movement").c_str());
 
   - platform: template
     id: zone3_name
-    name: "Zone 3 | Name"
+    name: "${zone3_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Zone 3"
+    initial_value: "${zone3_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(zone3_target_count)->set_name((n + " Target Count").c_str());
-          id(zone3_points_count)->set_name((n + " Points Count").c_str());
-          id(zone3_p1_x)->set_name((n + " P1 X").c_str());
-          id(zone3_p1_y)->set_name((n + " P1 Y").c_str());
-          id(zone3_p2_x)->set_name((n + " P2 X").c_str());
-          id(zone3_p2_y)->set_name((n + " P2 Y").c_str());
-          id(zone3_p3_x)->set_name((n + " P3 X").c_str());
-          id(zone3_p3_y)->set_name((n + " P3 Y").c_str());
-          id(zone3_p4_x)->set_name((n + " P4 X").c_str());
-          id(zone3_p4_y)->set_name((n + " P4 Y").c_str());
-          id(zone3_p5_x)->set_name((n + " P5 X").c_str());
-          id(zone3_p5_y)->set_name((n + " P5 Y").c_str());
-          id(zone3_p6_x)->set_name((n + " P6 X").c_str());
-          id(zone3_p6_y)->set_name((n + " P6 Y").c_str());
-          id(zone3_p7_x)->set_name((n + " P7 X").c_str());
-          id(zone3_p7_y)->set_name((n + " P7 Y").c_str());
-          id(zone3_p8_x)->set_name((n + " P8 X").c_str());
-          id(zone3_p8_y)->set_name((n + " P8 Y").c_str());
-          id(zone3_movement_threshold)->set_name((n + " Movement Threshold").c_str());
-          id(zone3_presence_delay)->set_name((n + " Presence Delay").c_str());
-          id(zone3_presence_bs)->set_name((n + " Presence").c_str());
-          id(zone3_movement_bs)->set_name((n + " Movement").c_str());
 
   - platform: template
     id: obj1_name
-    name: "Object 1 | Name"
+    name: "${obj1_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Object 1"
+    initial_value: "${obj1_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(obj1_enabled)->set_name((n + " | Enabled").c_str());
-          id(obj1_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-          id(obj1_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-          id(obj1_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-          id(obj1_x)->set_name((n + " X").c_str());
-          id(obj1_y)->set_name((n + " Y").c_str());
 
   - platform: template
     id: obj2_name
-    name: "Object 2 | Name"
+    name: "${obj2_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Object 2"
+    initial_value: "${obj2_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(obj2_enabled)->set_name((n + " | Enabled").c_str());
-          id(obj2_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-          id(obj2_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-          id(obj2_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-          id(obj2_x)->set_name((n + " X").c_str());
-          id(obj2_y)->set_name((n + " Y").c_str());
 
   - platform: template
     id: obj3_name
-    name: "Object 3 | Name"
+    name: "${obj3_label} | Name"
     icon: mdi:label-outline
     entity_category: config
     mode: text
-    initial_value: "Object 3"
+    initial_value: "${obj3_label}"
     optimistic: true
     restore_value: true
     min_length: 0
     max_length: 32
-    on_value:
-      - lambda: |-
-          std::string n = x;
-          id(obj3_enabled)->set_name((n + " | Enabled").c_str());
-          id(obj3_t1_dist)->set_name((n + " | Target 1 Distance").c_str());
-          id(obj3_t2_dist)->set_name((n + " | Target 2 Distance").c_str());
-          id(obj3_t3_dist)->set_name((n + " | Target 3 Distance").c_str());
-          id(obj3_x)->set_name((n + " X").c_str());
-          id(obj3_y)->set_name((n + " Y").c_str());
 
 text_sensor:
   - platform: wifi_info

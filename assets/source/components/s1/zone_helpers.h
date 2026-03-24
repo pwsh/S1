@@ -1,4 +1,5 @@
-#pragma once
+#ifndef ZONE_HELPERS_H
+#define ZONE_HELPERS_H
 
 // [OPT] Shared zone polygon helpers extracted from main.yaml.
 // Previously, zone_nz() and zone_in_poly() were copy-pasted verbatim into each
@@ -17,6 +18,45 @@
 //   bool hit = zone_in_poly(px, py, xs, ys, n);
 
 #include <cmath>
+
+// ── Target Position Smoothing ─────────────────────────────────────────────
+// Circular buffer of the last 5 measured (x, y) positions for one target.
+// Push only when the target is actively detected (distance > 0).
+// sx()/sy() return the mean of stored samples; cnt == 0 means no data yet.
+// Defined at namespace scope (not inside a lambda) so all lambdas share the
+// same three instances — ESPHome compiles to a single translation unit, so
+// the static qualifier prevents linker conflicts if this header were ever
+// included more than once in different files.
+struct TargetSmoothBuf {
+  static constexpr int SIZE = 5;
+  float xs[SIZE];
+  float ys[SIZE];
+  int   idx;
+  int   cnt;
+  TargetSmoothBuf() : idx(0), cnt(0) {
+    for (int i = 0; i < SIZE; i++) { xs[i] = 0.0f; ys[i] = 0.0f; }
+  }
+  void push(float x, float y) {
+    xs[idx] = x; ys[idx] = y;
+    idx = (idx + 1) % SIZE;
+    if (cnt < SIZE) cnt++;
+  }
+  float sx() const {
+    float s = 0.0f;
+    for (int i = 0; i < cnt; i++) s += xs[i];
+    return cnt > 0 ? s / static_cast<float>(cnt) : 0.0f;
+  }
+  float sy() const {
+    float s = 0.0f;
+    for (int i = 0; i < cnt; i++) s += ys[i];
+    return cnt > 0 ? s / static_cast<float>(cnt) : 0.0f;
+  }
+};
+
+// One buffer per radar target; updated by obj1_closest_dist lambda each cycle.
+static TargetSmoothBuf g_smooth_t1;
+static TargetSmoothBuf g_smooth_t2;
+static TargetSmoothBuf g_smooth_t3;
 
 // NaN-safe float read.  Returns 0.0f when the ESPHome number has not yet
 // received a state (which ESPHome represents as NaN).
@@ -56,3 +96,5 @@ inline bool zone_in_poly(float px, float py, const float* xs, const float* ys, i
   }
   return inside;
 }
+
+#endif // ZONE_HELPERS_H
